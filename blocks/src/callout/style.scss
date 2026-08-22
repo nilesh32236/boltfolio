@@ -1,0 +1,68 @@
+/**
+ * Callout block styles — applied on both the front end and the editor.
+ * Self-contained palette so the block looks right in any context.
+ */
+
+.wp-block-boltfolio-callout,
+.callout {
+	display: flex;
+	gap: 0.9rem;
+	padding: 1rem 1.2rem;
+	margin: 1.5rem 0;
+	border-radius: 10px;
+	border: 1px solid;
+	font-size: 0.95rem;
+
+	.callout-icon {
+		flex-shrink: 0;
+		margin-top: 0.15rem;
+		display: inline-flex;
+	}
+
+	.callout-title {
+		font-weight: 700;
+		margin: 0 0 0.25rem;
+	}
+
+	.callout-body > :first-child {
+		margin-top: 0;
+	}
+
+	.callout-body > :last-child {
+		margin-bottom: 0;
+	}
+}
+
+.wp-block-boltfolio-callout,
+.callout {
+
+	&.callout-info {
+		background: rgba(96, 165, 250, 0.09);
+		border-color: rgba(96, 165, 250, 0.35);
+
+		.callout-title,
+		.callout-icon {
+			color: #3b82f6;
+		}
+	}
+
+	&.callout-tip {
+		background: rgba(234, 179, 8, 0.09);
+		border-color: rgba(234, 179, 8, 0.35);
+
+		.callout-title,
+		.callout-icon {
+			color: #eab308;
+		}
+	}
+
+	&.callout-warning {
+		background: rgba(249, 115, 22, 0.09);
+		border-color: rgba(249, 115, 22, 0.4);
+
+		.callout-title,
+		.callout-icon {
+			color: #ea580c;
+		}
+	}
+}

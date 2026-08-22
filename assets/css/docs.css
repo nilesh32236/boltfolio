@@ -1,0 +1,186 @@
+/*
+ * Boltfolio documentation enhancements:
+ * code blocks with copy bar, "On this page" TOC rail, prev/next pager.
+ */
+
+/* ---------------------------------------------
+   Code blocks (bar injected by main.js)
+--------------------------------------------- */
+.entry-content .code-block {
+	margin: 1.5rem 0;
+	border-radius: var(--bolt-radius);
+	overflow: hidden;
+	border: 1px solid rgba(48, 54, 61, 0.9);
+	background: #0d1117;
+}
+
+.code-block-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.5rem 1rem;
+	background: #161b22;
+	border-bottom: 1px solid #30363d;
+}
+
+.code-block-lang {
+	font-family: var(--bolt-mono);
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: #8b949e;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.code-block-copy {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.28rem 0.65rem;
+	border-radius: 6px;
+	border: 1px solid #30363d;
+	background: #21262d;
+	color: #8b949e;
+	font-family: var(--bolt-mono);
+	font-size: 0.72rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: color 0.15s ease, background 0.15s ease;
+}
+
+.code-block-copy:hover,
+.code-block-copy:focus-visible {
+	color: #c9d1d9;
+	background: #30363d;
+}
+
+.code-block-copy.is-copied {
+	color: #7ee787;
+	border-color: #2ea04366;
+}
+
+/* The wrapped pre loses its own border/padding radius */
+.entry-content .code-block pre {
+	margin: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+}
+
+/* ---------------------------------------------
+   Docs layout: third column TOC rail on wide screens
+--------------------------------------------- */
+.docs-toc {
+	display: none;
+	position: sticky;
+	top: 96px;
+	max-height: calc(100vh - 130px);
+	overflow-y: auto;
+	font-size: 0.85rem;
+}
+
+@media (min-width: 1280px) {
+	.docs-layout.has-toc {
+		grid-template-columns: 230px minmax(0, 1fr) 200px;
+	}
+	.docs-toc {
+		display: block;
+	}
+}
+
+.docs-toc-title {
+	font-family: var(--bolt-mono);
+	font-size: 0.72rem;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: var(--bolt-muted);
+	margin: 0 0 0.8rem;
+}
+
+.docs-toc-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 0.15rem;
+}
+
+.docs-toc-list a {
+	display: block;
+	padding: 0.3rem 0 0.3rem 0.75rem;
+	border-left: 2px solid var(--bolt-border);
+	color: var(--bolt-muted);
+	line-height: 1.45;
+}
+
+.docs-toc-list a:hover,
+.docs-toc-list a:focus-visible {
+	color: var(--bolt-text);
+	text-decoration: none;
+	border-left-color: var(--bolt-muted);
+}
+
+.docs-toc-list a.is-active {
+	color: var(--bolt-accent);
+	border-left-color: var(--bolt-accent);
+}
+
+/* Numbered style like the reference guide */
+.docs-toc-list a .toc-num {
+	font-family: var(--bolt-mono);
+	font-size: 0.72rem;
+	color: var(--bolt-accent);
+	margin-right: 0.45rem;
+}
+
+/* ---------------------------------------------
+   Prev / Next pager between sibling doc pages
+--------------------------------------------- */
+.docs-pager {
+	display: flex;
+	justify-content: space-between;
+	align-items: stretch;
+	gap: 1rem;
+	margin-top: 3rem;
+	padding-top: 1.4rem;
+	border-top: 1px solid var(--bolt-border);
+}
+
+.docs-pager a {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	padding: 0.8rem 1rem;
+	border: 1px solid var(--bolt-border);
+	border-radius: var(--bolt-radius);
+	color: var(--bolt-muted);
+	transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.docs-pager a:hover,
+.docs-pager a:focus-visible {
+	color: var(--bolt-text);
+	border-color: var(--bolt-accent);
+	text-decoration: none;
+}
+
+.docs-pager a strong {
+	color: var(--bolt-text);
+	font-size: 0.95rem;
+	overflow-wrap: anywhere;
+}
+
+.docs-pager .pager-label {
+	font-family: var(--bolt-mono);
+	font-size: 0.72rem;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--bolt-accent);
+}
+
+.docs-pager .pager-next {
+	text-align: right;
+	align-items: flex-end;
+}

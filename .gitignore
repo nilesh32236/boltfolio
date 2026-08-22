@@ -1,0 +1,10 @@
+# Dependencies — never commit
+node_modules/
+
+# Logs & OS noise
+*.log
+.DS_Store
+Thumbs.db
+
+# Local env
+.wp-env.json
