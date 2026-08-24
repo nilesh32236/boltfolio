@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "boltfolio/blog-cta",
+	"version": "0.1.0",
+	"title": "Blog CTA",
+	"category": "design",
+	"icon": "megaphone",
+	"description": "Reusable call-to-action band for blog posts — Audit, GitHub, or Hire variants.",
+	"keywords": ["cta", "blog", "audit", "hire"],
+	"example": {
+		"attributes": { "variant": "audit", "title": "Need a faster site?" }
+	},
+	"supports": { "html": false, "align": true },
+	"attributes": {
+		"variant": { "type": "string", "default": "audit" },
+		"title": { "type": "string", "default": "Need a faster WordPress site?" },
+		"text": { "type": "string", "default": "Performance audits, custom caching solutions and code-level optimization work." },
+		"buttonText": { "type": "string", "default": "Get in touch" },
+		"buttonUrl": { "type": "string", "default": "/contact/" }
+	},
+	"textdomain": "boltfolio",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}
