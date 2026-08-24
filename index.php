@@ -7,6 +7,7 @@
 
 get_header();
 ?>
+<div class="bolt-container">
 <header class="archive-header">
 	<p class="section-kicker"><?php esc_html_e( 'Blog', 'boltfolio' ); ?></p>
 	<h1 class="page-title"><?php esc_html_e( 'Latest posts', 'boltfolio' ); ?></h1>
@@ -46,5 +47,7 @@ else :
 	<p><?php esc_html_e( 'No posts yet. Check back soon.', 'boltfolio' ); ?></p>
 	<?php
 endif;
+?>
+</div><!-- .bolt-container -->
 
-get_footer();
+<?php get_footer();

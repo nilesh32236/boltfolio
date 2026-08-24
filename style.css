@@ -20,7 +20,7 @@ Tags: portfolio, blog, one-column, custom-menu, custom-logo, featured-images
 	--bolt-bg: #0b0f14;
 	--bolt-surface: #121820;
 	--bolt-surface-2: #18212c;
-	--bolt-border: rgba(255, 255, 255, 0.08);
+	--bolt-border: rgba(255, 255, 255, 0.12);
 	--bolt-text: #e6edf3;
 	--bolt-muted: #94a3b8;
 	--bolt-accent: #ffb300;
@@ -222,8 +222,8 @@ a:focus-visible {
 	justify-content: center;
 	width: 42px;
 	height: 42px;
-	background: transparent;
-	border: 1px solid var(--bolt-border);
+	background: var(--bolt-surface-2);
+	border: 1px solid rgba(255, 255, 255, 0.18);
 	border-radius: 8px;
 	color: var(--bolt-text);
 	cursor: pointer;
@@ -239,11 +239,13 @@ a:focus-visible {
 		background: rgba(11, 15, 20, 0.98);
 		border-bottom: 1px solid var(--bolt-border);
 		transform: translateY(-130%);
-		transition: transform 0.25s ease;
+		visibility: hidden;
+		transition: transform 0.25s ease, visibility 0.25s ease;
 		z-index: 99;
 	}
 	.main-navigation.is-open {
 		transform: translateY(0);
+		visibility: visible;
 	}
 	.main-navigation ul {
 		flex-direction: column;
@@ -369,11 +371,11 @@ a:focus-visible {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 40px;
-	height: 40px;
+	min-width: 40px;
+	min-height: 40px;
 	border-radius: 8px;
-	border: 1px solid var(--bolt-border);
-	color: var(--bolt-muted);
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	color: var(--bolt-text);
 	background: transparent;
 }
 
@@ -431,8 +433,14 @@ a:focus-visible {
 --------------------------------------------- */
 .project-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
 	gap: 1.3rem;
+}
+
+@media (min-width: 1024px) {
+	.project-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
 }
 
 .project-card {
@@ -468,7 +476,7 @@ a:focus-visible {
 
 .badge {
 	font-family: var(--bolt-mono);
-	font-size: 0.72rem;
+	font-size: 0.78rem;
 	letter-spacing: 0.04em;
 	padding: 0.22rem 0.6rem;
 	border-radius: 999px;
@@ -536,6 +544,8 @@ a:focus-visible {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.35rem;
+	padding: 0.4rem 0.5rem;
+	margin: -0.4rem -0.5rem;
 }
 
 .card-meta a:hover {
@@ -690,6 +700,8 @@ a:focus-visible {
 	border-radius: 5px;
 	padding: 0.12em 0.4em;
 	color: var(--bolt-accent-strong);
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
 }
 
 .entry-content pre {
@@ -725,11 +737,22 @@ a:focus-visible {
 .entry-content td {
 	text-align: left;
 	border: 1px solid var(--bolt-border);
-	padding: 0.6rem 0.85rem;
+	padding: 0.65rem 0.85rem;
 }
 
 .entry-content th {
 	background: var(--bolt-surface);
+	border-bottom-width: 1px;
+	font-weight: 600;
+}
+
+.wp-block-table {
+	width: 100%;
+	margin-inline: 0;
+}
+
+.wp-block-table table {
+	min-width: 0;
 }
 
 .post-nav {
@@ -747,7 +770,7 @@ a:focus-visible {
 	gap: 0.4rem;
 	font-family: var(--bolt-mono);
 	font-size: 0.86rem;
-	color: var(--bolt-muted);
+	color: #b8c4d0;
 	margin-bottom: 1.4rem;
 }
 
@@ -841,8 +864,15 @@ a:focus-visible {
 	text-decoration: none;
 }
 
-.docs-nav .current_page_item > a {
-	box-shadow: inset 2px 0 0 var(--bolt-accent);
+.docs-nav .current_page_item > a,
+.docs-nav li.current_page_item > a {
+	background: var(--bolt-surface-2);
+	border-left: 3px solid var(--bolt-accent);
+	margin-left: -1.2rem;
+	margin-right: -1.2rem;
+	padding-left: calc(0.65rem + 1.2rem - 3px);
+	padding-right: calc(0.65rem + 1.2rem);
+	border-radius: 0;
 }
 
 /* ---------------------------------------------
@@ -927,6 +957,70 @@ a:focus-visible {
 }
 
 /* ---------------------------------------------
+   Code blocks (bar injected by main.js)
+--------------------------------------------- */
+.entry-content .code-block {
+	margin: 1.5rem 0;
+	border-radius: var(--bolt-radius);
+	overflow: hidden;
+	border: 1px solid rgba(48, 54, 61, 0.9);
+	background: #0d1117;
+}
+
+.code-block-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.5rem 1rem;
+	background: #161b22;
+	border-bottom: 1px solid #30363d;
+}
+
+.code-block-lang {
+	font-family: var(--bolt-mono);
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: #8b949e;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.code-block-copy {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.28rem 0.65rem;
+	border-radius: 6px;
+	border: 1px solid #30363d;
+	background: #21262d;
+	color: #8b949e;
+	font-family: var(--bolt-mono);
+	font-size: 0.72rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: color 0.15s ease, background 0.15s ease;
+}
+
+.code-block-copy:hover,
+.code-block-copy:focus-visible {
+	color: #c9d1d9;
+	background: #30363d;
+}
+
+.code-block-copy.is-copied {
+	color: #7ee787;
+	border-color: #2ea04366;
+}
+
+/* The wrapped pre loses its own border/padding radius */
+.entry-content .code-block pre {
+	margin: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+}
+
+/* ---------------------------------------------
    Footer
 --------------------------------------------- */
 .site-footer {
@@ -953,6 +1047,8 @@ a:focus-visible {
 }
 
 .footer-nav a {
+	display: inline-block;
+	padding: 0.35rem 0;
 	color: var(--bolt-muted);
 	font-size: 0.92rem;
 }
@@ -969,8 +1065,8 @@ a:focus-visible {
 .copyright {
 	margin-top: 1.6rem;
 	font-family: var(--bolt-mono);
-	font-size: 0.8rem;
-	color: var(--bolt-muted);
+	font-size: 0.85rem;
+	color: var(--bolt-text);
 }
 
 .copyright .heart {

@@ -4,70 +4,6 @@
  */
 
 /* ---------------------------------------------
-   Code blocks (bar injected by main.js)
---------------------------------------------- */
-.entry-content .code-block {
-	margin: 1.5rem 0;
-	border-radius: var(--bolt-radius);
-	overflow: hidden;
-	border: 1px solid rgba(48, 54, 61, 0.9);
-	background: #0d1117;
-}
-
-.code-block-bar {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0.5rem 1rem;
-	background: #161b22;
-	border-bottom: 1px solid #30363d;
-}
-
-.code-block-lang {
-	font-family: var(--bolt-mono);
-	font-size: 0.7rem;
-	font-weight: 600;
-	color: #8b949e;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-}
-
-.code-block-copy {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.35rem;
-	padding: 0.28rem 0.65rem;
-	border-radius: 6px;
-	border: 1px solid #30363d;
-	background: #21262d;
-	color: #8b949e;
-	font-family: var(--bolt-mono);
-	font-size: 0.72rem;
-	font-weight: 600;
-	cursor: pointer;
-	transition: color 0.15s ease, background 0.15s ease;
-}
-
-.code-block-copy:hover,
-.code-block-copy:focus-visible {
-	color: #c9d1d9;
-	background: #30363d;
-}
-
-.code-block-copy.is-copied {
-	color: #7ee787;
-	border-color: #2ea04366;
-}
-
-/* The wrapped pre loses its own border/padding radius */
-.entry-content .code-block pre {
-	margin: 0;
-	border: 0;
-	border-radius: 0;
-	background: transparent;
-}
-
-/* ---------------------------------------------
    Docs layout: third column TOC rail on wide screens
 --------------------------------------------- */
 .docs-toc {
@@ -183,4 +119,24 @@
 .docs-pager .pager-next {
 	text-align: right;
 	align-items: flex-end;
+}
+
+/* ---------------------------------------------
+   Overflow guards (grid children shrink properly)
+--------------------------------------------- */
+.docs-layout > * {
+	min-width: 0;
+	max-width: 100%;
+}
+
+.docs-content,
+.docs-sidebar,
+.docs-toc {
+	min-width: 0;
+}
+
+.docs-content .wp-block-table {
+	display: block;
+	width: 100%;
+	overflow-x: auto;
 }

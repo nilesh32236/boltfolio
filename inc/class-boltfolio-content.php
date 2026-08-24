@@ -21,6 +21,38 @@ final class Boltfolio_Content {
 	public static function init(): void {
 		add_filter( 'the_content', array( __CLASS__, 'anchor_headings' ), 20 );
 		add_shortcode( 'callout', array( __CLASS__, 'render_callout_shortcode' ) );
+		add_filter( 'nav_menu_css_class', array( __CLASS__, 'archive_menu_current' ), 10, 3 );
+	}
+
+	/**
+	 * Mark the Projects archive item as current on project singles/terms.
+	 *
+	 * @param array<string> $classes Nav item classes.
+	 * @param WP_Post       $item    Menu item.
+	 * @param stdClass      $args    Menu args.
+	 * @return array<string>
+	 */
+	public static function archive_menu_current( array $classes, $item, $args ): array {
+		if ( ( $args->theme_location ?? '' ) !== 'primary' ) {
+			return $classes;
+		}
+
+		$is_project_archive_item = ( $item->type ?? '' ) === 'post_type_archive'
+			&& ( $item->object ?? '' ) === 'project';
+
+		if ( ! $is_project_archive_item || in_array( 'current-menu-item', $classes, true ) ) {
+			return $classes;
+		}
+
+		if (
+			is_singular( 'project' )
+			|| is_post_type_archive( 'project' )
+			|| is_tax( Boltfolio_Projects::TAXONOMY )
+		) {
+			$classes[] = 'current-menu-item';
+		}
+
+		return $classes;
 	}
 
 	/**

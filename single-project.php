@@ -72,6 +72,13 @@ while ( have_posts() ) :
 			}
 
 			$related = new WP_Query( $related_args );
+
+			if ( ! $related->have_posts() && isset( $related_args['tax_query'] ) ) {
+				// Sole project of its type — fall back to latest others.
+				unset( $related_args['tax_query'] );
+				$related = new WP_Query( $related_args );
+			}
+
 			if ( $related->have_posts() ) :
 				?>
 				<section class="section section-alt" style="margin-top:3rem;border-radius:14px;">

@@ -17,7 +17,7 @@ while ( have_posts() ) :
 					<?php boltfolio_breadcrumbs(); ?>
 				<?php endif; ?>
 				<h1 class="entry-title"><?php the_title(); ?></h1>
-				<?php if ( get_the_excerpt() && ! is_front_page() ) : ?>
+				<?php if ( '' !== trim( (string) get_post()->post_excerpt ) && ! is_front_page() ) : ?>
 					<p class="entry-sub"><?php echo esc_html( get_the_excerpt() ); ?></p>
 				<?php endif; ?>
 			</header>

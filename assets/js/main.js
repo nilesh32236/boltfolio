@@ -157,6 +157,13 @@
 			list.appendChild(item);
 		});
 
+		list.addEventListener('click', function (event) {
+			var link = event.target.closest('a');
+			if (!link) return;
+			links.forEach(function (l) { l.classList.remove('is-active'); });
+			link.classList.add('is-active');
+		});
+
 		// Scroll-spy: highlight the topmost heading inside the reading zone.
 		if ('IntersectionObserver' in window) {
 			var visible = new Map();
@@ -191,11 +198,15 @@
 						link.classList.remove('is-active');
 					});
 
+					if (!bestId && window.scrollY < 160 && headings[0]) {
+						bestId = headings[0].id;
+					}
+
 					if (bestId && byId[bestId]) {
 						byId[bestId].classList.add('is-active');
 					}
 				},
-				{ rootMargin: '-20% 0px -70% 0px' }
+				{ rootMargin: '-12% 0px -52% 0px' }
 			);
 
 			headings.forEach(function (heading) {

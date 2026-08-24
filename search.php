@@ -7,6 +7,7 @@
 
 get_header();
 ?>
+<div class="bolt-container">
 <header class="archive-header">
 	<p class="section-kicker"><?php esc_html_e( 'Search', 'boltfolio' ); ?></p>
 	<h1 class="page-title">
@@ -37,9 +38,11 @@ get_header();
 		?>
 	</div>
 
+	<?php if ( $wp_query->max_num_pages > 1 ) : ?>
 	<div class="pagination">
 		<?php the_posts_pagination( array( 'mid_size' => 1 ) ); ?>
 	</div>
+	<?php endif; ?>
 	<?php
 else :
 	?>
@@ -47,5 +50,7 @@ else :
 	<?php get_search_form(); ?>
 	<?php
 endif;
+?>
+</div><!-- .bolt-container -->
 
-get_footer();
+<?php get_footer();

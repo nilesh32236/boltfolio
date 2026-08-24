@@ -27,6 +27,7 @@ if ( is_post_type_archive( 'project' ) ) {
 	$desc   = get_the_archive_description();
 }
 ?>
+<div class="bolt-container">
 <header class="archive-header">
 	<p class="section-kicker"><?php echo esc_html( $kicker ); ?></p>
 	<h1 class="page-title"><?php echo esc_html( $title ); ?></h1>
@@ -60,14 +61,18 @@ if ( is_post_type_archive( 'project' ) ) {
 		?>
 	</div>
 
+	<?php if ( $wp_query->max_num_pages > 1 ) : ?>
 	<div class="pagination">
 		<?php the_posts_pagination( array( 'mid_size' => 1 ) ); ?>
 	</div>
+	<?php endif; ?>
 	<?php
 else :
 	?>
 	<p><?php esc_html_e( 'Nothing found in this archive yet.', 'boltfolio' ); ?></p>
 	<?php
 endif;
+?>
+</div><!-- .bolt-container -->
 
-get_footer();
+<?php get_footer();
