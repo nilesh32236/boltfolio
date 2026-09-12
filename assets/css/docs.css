@@ -1,36 +1,507 @@
 /*
- * Boltfolio documentation enhancements:
- * code blocks with copy bar, "On this page" TOC rail, prev/next pager.
+ * Boltfolio — documentation layer.
+ *
+ * Three columns: a grouped, searchable tree; the reading column; and an
+ * "on this page" rail. Loaded only on docs routes.
  */
 
-/* ---------------------------------------------
-   Docs layout: third column TOC rail on wide screens
---------------------------------------------- */
+/* =============================================================
+   1. DOCS SHELL
+   ============================================================= */
+.docs-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: clamp(1.5rem, 4vw, 3rem);
+	align-items: start;
+	padding-block: clamp(1.5rem, 3vw, 2.5rem) clamp(3rem, 6vw, 5rem);
+}
+
+.docs-layout > * {
+	min-width: 0;
+	max-width: 100%;
+}
+
+@media (min-width: 1080px) {
+	.docs-layout {
+		grid-template-columns: 252px minmax(0, 1fr);
+	}
+
+	.docs-layout.has-toc {
+		grid-template-columns: 252px minmax(0, 1fr) 208px;
+	}
+}
+
+@media (min-width: 1400px) {
+	.docs-layout.has-toc {
+		grid-template-columns: 264px minmax(0, 1fr) 224px;
+	}
+}
+
+/* =============================================================
+   2. SIDEBAR
+   ============================================================= */
+.docs-sidebar {
+	min-width: 0;
+}
+
+@media (min-width: 1080px) {
+	.docs-sidebar {
+		position: sticky;
+		top: 80px;
+		max-height: calc(100vh - 104px);
+		display: flex;
+		flex-direction: column;
+		gap: 0.85rem;
+	}
+}
+
+/* Product header + search trigger */
+.docs-sidebar__head {
+	display: flex;
+	flex-direction: column;
+	gap: 0.7rem;
+	padding-bottom: 0.85rem;
+	border-bottom: 1px solid var(--line);
+}
+
+.docs-product {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.6rem;
+}
+
+.docs-product__name {
+	font-family: var(--font-display);
+	font-size: 1.125rem;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	color: var(--ivory);
+	margin: 0;
+}
+
+.docs-product__name a {
+	color: inherit;
+}
+
+.docs-product__name a:hover {
+	color: var(--brass);
+	text-decoration: none;
+}
+
+.docs-product__ver {
+	font-family: var(--font-mono);
+	font-size: 0.625rem;
+	color: var(--ivory-4);
+	white-space: nowrap;
+}
+
+.docs-search-trigger {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	width: 100%;
+	padding: 0.5rem 0.6rem;
+	background: var(--surface);
+	border: 1px solid var(--line-2);
+	border-radius: var(--radius);
+	color: var(--ivory-3);
+	font-family: var(--font-sans);
+	font-size: var(--fs-sm);
+	text-align: left;
+	cursor: pointer;
+	transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.docs-search-trigger:hover {
+	border-color: var(--ivory);
+	color: var(--ivory);
+}
+
+.docs-search-trigger svg {
+	flex: none;
+	opacity: 0.7;
+}
+
+.docs-search-trigger span {
+	flex: 1;
+}
+
+.docs-search-trigger kbd {
+	font-family: var(--font-mono);
+	font-size: 0.625rem;
+	padding: 0.1rem 0.3rem;
+	border: 1px solid var(--line-2);
+	border-radius: var(--radius);
+	background: var(--base);
+	color: var(--ivory-4);
+	flex: none;
+}
+
+/* Scrollable tree region */
+.docs-nav {
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-width: thin;
+	padding-right: 0.35rem;
+	margin-right: -0.35rem;
+}
+
+@media (min-width: 1080px) {
+	.docs-nav {
+		flex: 1;
+	}
+}
+
+.docs-nav ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+/* Top-level groups are disclosures. */
+.docnav-group {
+	border-bottom: 1px solid var(--line);
+}
+
+.docnav-group:last-child {
+	border-bottom: 0;
+}
+
+.docnav-group > summary {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.6rem 0.15rem;
+	cursor: pointer;
+	list-style: none;
+	font-size: var(--fs-sm);
+	font-weight: 600;
+	color: var(--ivory);
+	letter-spacing: -0.005em;
+}
+
+.docnav-group > summary::-webkit-details-marker {
+	display: none;
+}
+
+.docnav-group > summary::before {
+	content: "";
+	width: 0;
+	height: 0;
+	flex: none;
+	border-left: 4px solid var(--ivory-4);
+	border-top: 3.5px solid transparent;
+	border-bottom: 3.5px solid transparent;
+	transition: transform 0.18s var(--ease);
+}
+
+.docnav-group[open] > summary::before {
+	transform: rotate(90deg) translateX(1px);
+}
+
+.docnav-group > summary:hover {
+	color: var(--brass);
+}
+
+.docnav-group__count {
+	margin-left: auto;
+	font-family: var(--font-mono);
+	font-size: 0.625rem;
+	color: var(--ivory-4);
+	font-weight: 400;
+}
+
+.docnav-group__body {
+	padding: 0 0 0.6rem 0.85rem;
+	border-left: 1px solid var(--line);
+	margin-left: 0.15rem;
+}
+
+.docnav-group__body ul ul {
+	padding-left: 0.7rem;
+	border-left: 1px solid var(--line);
+	margin-left: 0.1rem;
+}
+
+/* Leaf links */
+.docs-nav li {
+	list-style: none;
+}
+
+.docs-nav li > a {
+	display: block;
+	padding: 0.32rem 0.5rem;
+	border-radius: var(--radius);
+	font-size: var(--fs-sm);
+	line-height: 1.4;
+	color: var(--ivory-2);
+	overflow-wrap: anywhere;
+	transition: background 0.14s var(--ease), color 0.14s var(--ease);
+}
+
+.docs-nav li > a:hover,
+.docs-nav li > a:focus-visible {
+	background: var(--surface-3);
+	color: var(--ivory);
+	text-decoration: none;
+}
+
+.docs-nav .current_page_item > a {
+	background: var(--brass);
+	color: #14120b;
+	font-weight: 600;
+}
+
+.docs-nav .current_page_item > a:hover {
+	background: var(--brass-2);
+	color: #14120b;
+}
+
+.docs-nav .current_page_ancestor > a {
+	color: var(--ivory);
+	font-weight: 600;
+	background: transparent;
+}
+
+/* "Overview" entry sits above the tree */
+.docs-overview {
+	margin-bottom: 0.4rem;
+	padding-bottom: 0.4rem;
+	border-bottom: 1px solid var(--line);
+}
+
+.docs-overview > a {
+	font-weight: 600;
+}
+
+/* Filenames read better in mono, and signal "this is source". */
+.docs-nav a[data-file="1"] {
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	letter-spacing: -0.01em;
+}
+
+/* Monospace link rows get a tighter rhythm */
+.docnav-group__body--files li > a {
+	padding-block: 0.24rem;
+}
+
+/* Nested disclosures — a reference branch with its own sub-groups.
+   Collapsed by default so "Code reference" does not dump 50 links. */
+.docnav-sub {
+	border-top: 1px solid var(--line);
+}
+
+.docnav-sub > summary {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	padding: 0.5rem 0.35rem;
+	cursor: pointer;
+	list-style: none;
+	font-size: var(--fs-xs);
+	font-weight: 600;
+	color: var(--ivory-2);
+	line-height: 1.35;
+}
+
+.docnav-sub > summary::-webkit-details-marker {
+	display: none;
+}
+
+.docnav-sub > summary::before {
+	content: "";
+	width: 0;
+	height: 0;
+	flex: none;
+	border-left: 3.5px solid var(--ivory-4);
+	border-top: 3px solid transparent;
+	border-bottom: 3px solid transparent;
+	transition: transform 0.18s var(--ease);
+}
+
+.docnav-sub[open] > summary::before {
+	transform: rotate(90deg) translateX(1px);
+}
+
+.docnav-sub > summary:hover {
+	color: var(--brass);
+}
+
+.docnav-sub > ul {
+	padding-left: 0.6rem;
+	margin-left: 0.2rem;
+	border-left: 1px solid var(--line);
+}
+
+.docnav-sub .docnav-group__count {
+	font-size: 0.5625rem;
+}
+
+/* Mobile: turn the sidebar into a disclosure at the top of the page. */
+@media (max-width: 1079px) {
+	.docs-sidebar {
+		border: 1px solid var(--line);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+		overflow: hidden;
+	}
+
+	.docs-sidebar__head {
+		padding: 0.85rem 1rem;
+		border-bottom: 0;
+	}
+
+	.docs-sidebar > .docs-nav {
+		display: none;
+		border-top: 1px solid var(--line);
+		padding: 0.5rem 1rem 1rem;
+		max-height: 60vh;
+	}
+
+	.docs-sidebar[data-open="true"] > .docs-nav {
+		display: block;
+	}
+
+	.docs-sidebar__toggle {
+		display: inline-flex;
+	}
+
+	.docnav-group > summary {
+		padding-block: 0.7rem;
+	}
+}
+
+@media (min-width: 1080px) {
+	.docs-sidebar__toggle {
+		display: none;
+	}
+}
+
+.docs-sidebar__toggle {
+	align-items: center;
+	gap: 0.45rem;
+	padding: 0.4rem 0.6rem;
+	background: transparent;
+	border: 1px solid var(--line-2);
+	border-radius: var(--radius);
+	color: var(--ivory-2);
+	font-family: var(--font-mono);
+	font-size: var(--fs-label);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+
+.docs-sidebar__row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.6rem;
+}
+
+/* =============================================================
+   3. DOC HEADER + CONTENT
+   ============================================================= */
+.docs-content {
+	min-width: 0;
+}
+
+.dochead {
+	padding-bottom: clamp(1.25rem, 3vw, 2rem);
+	border-bottom: 1px solid var(--line);
+	margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.dochead__title {
+	font-family: var(--font-mono);
+	font-weight: 500;
+	font-size: clamp(1.5rem, 1.1rem + 1.5vw, 2.125rem);
+	line-height: 1.15;
+	letter-spacing: -0.03em;
+	margin: 0.85rem 0 0;
+	color: var(--ivory);
+	overflow-wrap: anywhere;
+}
+
+.dochead__title--prose {
+	font-family: var(--font-display);
+	font-weight: 400;
+	letter-spacing: -0.02em;
+}
+
+.dochead__sub {
+	margin: 0.9rem 0 0;
+	font-size: var(--fs-lede);
+	line-height: 1.55;
+	color: var(--ivory-2);
+	max-width: 62ch;
+}
+
+.dochead__facts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 1.25rem;
+	margin-top: 1.1rem;
+	font-family: var(--font-mono);
+	font-size: var(--fs-xs);
+	color: var(--ivory-3);
+}
+
+.dochead__facts span {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.dochead__facts b {
+	font-weight: 500;
+	color: var(--ivory);
+}
+
+/* Source-file signature line, e.g. "includes/class-main.php" */
+.docs-source {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+/* =============================================================
+   4. ON THIS PAGE
+   ============================================================= */
 .docs-toc {
 	display: none;
-	position: sticky;
-	top: 96px;
-	max-height: calc(100vh - 130px);
-	overflow-y: auto;
-	font-size: 0.85rem;
+	min-width: 0;
 }
 
 @media (min-width: 1280px) {
-	.docs-layout.has-toc {
-		grid-template-columns: 230px minmax(0, 1fr) 200px;
-	}
 	.docs-toc {
 		display: block;
+		position: sticky;
+		top: 80px;
+		max-height: calc(100vh - 104px);
+		overflow-y: auto;
+		scrollbar-width: thin;
+	}
+
+	.docs-toc[hidden] {
+		display: none;
 	}
 }
 
-.docs-toc-title {
-	font-family: var(--bolt-mono);
-	font-size: 0.72rem;
+.docs-toc__title {
+	font-family: var(--font-mono);
+	font-size: var(--fs-label);
 	text-transform: uppercase;
-	letter-spacing: 0.12em;
-	color: var(--bolt-muted);
-	margin: 0 0 0.8rem;
+	letter-spacing: 0.11em;
+	color: var(--ivory-4);
+	margin: 0 0 0.75rem;
+	padding-bottom: 0.6rem;
+	border-bottom: 1px solid var(--line);
 }
 
 .docs-toc-list {
@@ -38,124 +509,84 @@
 	margin: 0;
 	padding: 0;
 	display: grid;
-	gap: 0.15rem;
+	gap: 0.05rem;
 }
 
 .docs-toc-list a {
 	display: block;
-	padding: 0.3rem 0 0.3rem 0.75rem;
-	border-left: 2px solid var(--bolt-border);
-	color: var(--bolt-muted);
-	line-height: 1.45;
+	padding: 0.28rem 0 0.28rem 0.7rem;
+	border-left: 2px solid var(--line);
+	color: var(--ivory-3);
+	font-size: 0.8125rem;
+	line-height: 1.4;
+	overflow-wrap: anywhere;
+	transition: color 0.14s var(--ease), border-color 0.14s var(--ease);
 }
 
 .docs-toc-list a:hover,
 .docs-toc-list a:focus-visible {
-	color: var(--bolt-text);
+	color: var(--ivory);
+	border-left-color: var(--ivory-4);
 	text-decoration: none;
-	border-left-color: var(--bolt-muted);
 }
 
 .docs-toc-list a.is-active {
-	color: var(--bolt-accent);
-	border-left-color: var(--bolt-accent);
+	color: var(--brass);
+	border-left-color: var(--brass);
+	font-weight: 500;
 }
 
-/* Numbered style like the reference guide */
-.docs-toc-list a .toc-num {
-	font-family: var(--bolt-mono);
-	font-size: 0.72rem;
-	color: var(--bolt-accent);
-	margin-right: 0.45rem;
+.docs-toc-list .toc-num {
+	font-family: var(--font-mono);
+	font-size: 0.625rem;
+	color: var(--ivory-4);
+	margin-right: 0.4rem;
+	font-variant-numeric: tabular-nums;
 }
 
-/* ---------------------------------------------
-   Prev / Next pager between sibling doc pages
---------------------------------------------- */
-.docs-pager {
-	display: flex;
-	justify-content: space-between;
-	align-items: stretch;
-	gap: 1rem;
-	margin-top: 3rem;
-	padding-top: 1.4rem;
-	border-top: 1px solid var(--bolt-border);
+.docs-toc-list a.is-active .toc-num {
+	color: var(--brass);
 }
 
-.docs-pager a {
-	flex: 1;
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 0.25rem;
-	padding: 0.8rem 1rem;
-	border: 1px solid var(--bolt-border);
-	border-radius: var(--bolt-radius);
-	color: var(--bolt-muted);
-	transition: border-color 0.15s ease, color 0.15s ease;
+.docs-toc-list li[data-level="3"] a {
+	padding-left: 1.4rem;
+	font-size: 0.78125rem;
 }
 
-.docs-pager a:hover,
-.docs-pager a:focus-visible {
-	color: var(--bolt-text);
-	border-color: var(--bolt-accent);
-	text-decoration: none;
-}
+/* =============================================================
+   5. API REFERENCE PRIMITIVES
+   The docs pipeline emits these; they carry the reference look.
+   ============================================================= */
 
-.docs-pager a strong {
-	color: var(--bolt-text);
-	font-size: 0.95rem;
+/* "Source: includes/class-x.php line N" annotation, sits under a heading. */
+.wppo-api-meta {
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	line-height: 1.5;
+	color: var(--ivory-3);
+	margin: -0.6rem 0 1.4rem;
+	padding-left: 0.7rem;
+	border-left: 2px solid var(--line-2);
 	overflow-wrap: anywhere;
 }
 
-.docs-pager .pager-label {
-	font-family: var(--bolt-mono);
-	font-size: 0.72rem;
-	text-transform: uppercase;
-	letter-spacing: 0.1em;
-	color: var(--bolt-accent);
+.wppo-api-meta a {
+	color: var(--ivory-2);
+	text-decoration: underline;
+	text-decoration-color: var(--line-2);
 }
 
-.docs-pager .pager-next {
-	text-align: right;
-	align-items: flex-end;
-}
-
-/* ---------------------------------------------
-   Overflow guards (grid children shrink properly)
---------------------------------------------- */
-.docs-layout > * {
-	min-width: 0;
-	max-width: 100%;
-}
-
-.docs-content,
-.docs-sidebar,
-.docs-toc {
-	min-width: 0;
-}
-
-.docs-content .wp-block-table {
-	display: block;
-	width: 100%;
-	overflow-x: auto;
-}
-
-
-/* ---------------------------------------------
-   API reference (Codex-style code pages)
---------------------------------------------- */
-/* Signature block: monospace, accent edge, horizontal scroll, copy-friendly */
+/* Signature line — monospace, accent edge, scrolls horizontally. */
 .wppo-api-sign {
-	background: var(--bolt-surface);
-	border: 1px solid var(--bolt-border);
-	border-left: 3px solid var(--bolt-accent);
-	border-radius: var(--bolt-radius);
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-left: 3px solid var(--brass);
+	border-radius: var(--radius);
 	margin: 1.4rem 0;
-	padding: 0.9rem 1.1rem;
+	padding: 0.85rem 1.05rem;
 	overflow-x: auto;
-	font-family: var(--bolt-mono);
-	font-size: 0.9rem;
+	font-family: var(--font-mono);
+	font-size: 0.875rem;
 	line-height: 1.6;
 }
 
@@ -163,84 +594,21 @@
 	background: transparent;
 	border: 0;
 	padding: 0;
-	color: var(--bolt-text);
+	color: var(--ivory);
 	font-size: inherit;
 	white-space: pre;
 }
 
-/* "Source: includes/class-x.php line N" annotations */
-.wppo-api-meta {
-	font-family: var(--bolt-mono);
-	font-size: 0.78rem;
-	color: var(--bolt-muted);
-	margin: -0.7rem 0 1.4rem;
-}
-
-/* Parameter tables: tight, left-aligned th, zebra rows, mono first column */
+/* Parameter tables — dense, mono first column, hairline rules. */
 .wppo-api-params {
 	width: 100%;
 	border-collapse: collapse;
-	font-size: 0.9rem;
+	font-size: 0.875rem;
 	margin: 1rem 0 1.6rem;
 }
 
-.wppo-api-params th,
-.wppo-api-params td {
-	text-align: left;
-	border: 1px solid var(--bolt-border);
-	padding: 0.45rem 0.7rem;
-	vertical-align: top;
-}
-
-.wppo-api-params th {
-	background: var(--bolt-surface);
-	font-weight: 600;
-}
-
-.wppo-api-params tbody tr:nth-child(even) {
-	background: rgba(255, 255, 255, 0.03);
-}
-
-.wppo-api-params td:first-child {
-	font-family: var(--bolt-mono);
-	font-size: 0.85rem;
-	white-space: nowrap;
-}
-
-/* Same overflow guard as .docs-content .wp-block-table */
-.docs-content .wppo-api-params {
-	display: block;
-	width: 100%;
-	overflow-x: auto;
-}
-
-/* Anchor jumps land below the sticky header (same 90px offset as style.css headings) */
-.wppo-api-method {
-	scroll-margin-top: 90px;
-}
-
-/* Visibility badges: public / static / hook */
-.wppo-api-tag {
-	display: inline-block;
-	font-family: var(--bolt-mono);
-	font-size: 0.7em;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	color: var(--bolt-muted);
-	border: 1px solid var(--bolt-border);
-	border-radius: 999px;
-	padding: 0.12rem 0.55rem;
-	vertical-align: middle;
-	margin-left: 0.4rem;
-}
-
-/* Parity: core/table places the block className on the wrapping <figure>,
-   not on the <table> itself. The .wppo-api-params rules above target the
-   table element; mirror the table-level rules onto the inner table so API
-   reference tables keep their look as core/table blocks. */
 figure.wppo-api-params {
 	width: 100%;
-	font-size: 0.9rem;
 	margin: 1rem 0 1.6rem;
 }
 
@@ -248,4 +616,279 @@ figure.wppo-api-params table {
 	width: 100%;
 	border-collapse: collapse;
 	margin: 0;
+}
+
+.wppo-api-params th,
+.wppo-api-params td {
+	text-align: left;
+	padding: 0.55rem 0.75rem;
+	vertical-align: top;
+	border-bottom: 1px solid var(--line);
+}
+
+.wppo-api-params thead th {
+	font-family: var(--font-mono);
+	font-size: var(--fs-label);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	font-weight: 500;
+	color: var(--ivory-3);
+	border-bottom: 1px solid var(--line-3);
+	white-space: nowrap;
+	background: transparent;
+}
+
+.wppo-api-params tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.wppo-api-params td:first-child {
+	font-family: var(--font-mono);
+	font-size: 0.8125rem;
+	color: var(--ivory);
+	white-space: nowrap;
+}
+
+.wppo-api-params code {
+	font-size: 0.85em;
+	background: var(--surface-3);
+	border: 1px solid var(--line);
+	padding: 0.05em 0.3em;
+	border-radius: var(--radius);
+}
+
+/* Overflow guards — the layout must never scroll sideways. */
+.docs-content .wp-block-table,
+.docs-content .wppo-api-params {
+	display: block;
+	width: 100%;
+	overflow-x: auto;
+}
+
+.docs-content figure.wp-block-table {
+	display: block;
+}
+
+/* Visibility badges: public / static / hook */
+.wppo-api-tag {
+	display: inline-block;
+	font-family: var(--font-mono);
+	font-size: 0.625rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--ivory-3);
+	border: 1px solid var(--line-2);
+	border-radius: var(--radius);
+	padding: 0.1rem 0.4rem;
+	vertical-align: middle;
+	margin-left: 0.45rem;
+	white-space: nowrap;
+}
+
+/* Anchor targets clear the sticky header. */
+.wppo-api-method,
+.docs-content h2,
+.docs-content h3,
+.docs-content h4 {
+	scroll-margin-top: 5.5rem;
+}
+
+/* =============================================================
+   6. CALLOUTS
+
+   Styled by the block itself (blocks/build/callout/style-index.css)
+   so a callout looks identical on a docs page, a post or a page.
+   ============================================================= */
+
+/* =============================================================
+   7. PAGER (prev / next across sibling docs)
+   ============================================================= */
+.docs-pager {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1px;
+	background: var(--line);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-sm);
+	overflow: hidden;
+	margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+
+.docs-pager a,
+.docs-pager > span {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	background: var(--base);
+	padding: 1.1rem 1.25rem;
+	color: var(--ivory);
+	min-width: 0;
+}
+
+.docs-pager a:hover {
+	background: var(--surface);
+	text-decoration: none;
+}
+
+.docs-pager .pager-label {
+	font-family: var(--font-mono);
+	font-size: var(--fs-label);
+	text-transform: uppercase;
+	letter-spacing: 0.09em;
+	color: var(--ivory-3);
+}
+
+.docs-pager strong {
+	font-size: var(--fs-sm);
+	font-weight: 600;
+	line-height: 1.4;
+	overflow-wrap: anywhere;
+}
+
+.docs-pager a:hover strong {
+	color: var(--brass);
+}
+
+.docs-pager .pager-next {
+	text-align: right;
+	align-items: flex-end;
+}
+
+@media (max-width: 620px) {
+	.docs-pager {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.docs-pager .pager-next {
+		text-align: left;
+		align-items: flex-start;
+	}
+}
+
+/* =============================================================
+   8. DOCS HUB (archive + product landing)
+   ============================================================= */
+.docs-hub {
+	padding-block: clamp(2rem, 4vw, 3.5rem) clamp(3rem, 6vw, 5rem);
+}
+
+.docs-hub__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 1px;
+	background: var(--line);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-sm);
+	overflow: hidden;
+	margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+@media (min-width: 860px) {
+	.docs-hub__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.docs-hub__card {
+	background: var(--base);
+	padding: clamp(1.35rem, 3vw, 2rem);
+	display: flex;
+	flex-direction: column;
+	gap: 0.7rem;
+}
+
+.docs-hub__title {
+	font-family: var(--font-display);
+	font-weight: 400;
+	font-size: var(--fs-h3);
+	line-height: 1.2;
+	margin: 0;
+	letter-spacing: -0.01em;
+}
+
+.docs-hub__title a {
+	color: var(--ivory);
+}
+
+.docs-hub__title a:hover {
+	color: var(--brass);
+	text-decoration: none;
+}
+
+.docs-hub__text {
+	margin: 0;
+	font-size: var(--fs-sm);
+	line-height: 1.6;
+	color: var(--ivory-3);
+}
+
+.docs-hub__links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 1rem;
+	margin-top: 0.35rem;
+}
+
+/* Quick-start track: the ordered path through the docs. */
+.track {
+	border-top: 1px solid var(--line);
+	margin-top: 0.5rem;
+}
+
+.track__item {
+	display: grid;
+	grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+	align-items: baseline;
+	gap: 1rem;
+	padding: 0.95rem 0;
+	border-bottom: 1px solid var(--line);
+	color: inherit;
+}
+
+.track__item:hover {
+	text-decoration: none;
+}
+
+.track__item:hover .track__title {
+	color: var(--brass);
+}
+
+.track__num {
+	font-family: var(--font-mono);
+	font-size: var(--fs-xs);
+	color: var(--ivory-4);
+}
+
+.track__title {
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--ivory);
+	letter-spacing: -0.01em;
+	transition: color 0.15s var(--ease);
+}
+
+.track__desc {
+	display: block;
+	margin-top: 0.2rem;
+	font-size: var(--fs-sm);
+	color: var(--ivory-3);
+	font-weight: 400;
+}
+
+.track__meta {
+	font-family: var(--font-mono);
+	font-size: var(--fs-xs);
+	color: var(--ivory-4);
+	white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+	.track__item {
+		grid-template-columns: 2rem minmax(0, 1fr);
+		gap: 0.75rem;
+	}
+
+	.track__meta {
+		grid-column: 2;
+	}
 }

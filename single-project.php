@@ -10,92 +10,146 @@ get_header();
 while ( have_posts() ) :
 	the_post();
 
-	$github = get_post_meta( get_the_ID(), 'github_url', true );
-	$live   = get_post_meta( get_the_ID(), 'live_url', true );
+	$boltfolio_id     = (int) get_the_ID();
+	$boltfolio_github = (string) get_post_meta( $boltfolio_id, 'github_url', true );
+	$boltfolio_live   = (string) get_post_meta( $boltfolio_id, 'live_url', true );
+	$boltfolio_terms  = get_the_terms( $boltfolio_id, Boltfolio_Projects::TAXONOMY );
 	?>
-	<article id="project-<?php the_ID(); ?>" <?php post_class(); ?>>
-		<div class="bolt-container">
-			<a class="back-link" href="<?php echo esc_url( get_post_type_archive_link( 'project' ) ?: home_url( '/' ) ); ?>">
-				&larr; <?php esc_html_e( 'All projects', 'boltfolio' ); ?>
-			</a>
 
-			<header class="project-hero">
-				<?php boltfolio_term_badges(); ?>
-				<h1 class="entry-title"><?php the_title(); ?></h1>
+	<article id="project-<?php the_ID(); ?>" <?php post_class(); ?>>
+		<div class="shell">
+
+			<header class="page-head">
+				<?php
+				boltfolio_crumbs(
+					array(
+						array(
+							'label' => __( 'Home', 'boltfolio' ),
+							'url'   => home_url( '/' ),
+						),
+						array(
+							'label' => __( 'Work', 'boltfolio' ),
+							'url'   => (string) get_post_type_archive_link( 'project' ),
+						),
+						array( 'label' => get_the_title() ),
+					)
+				);
+				?>
+
+				<h1 class="page-head__title"><?php the_title(); ?></h1>
+
 				<?php if ( get_the_excerpt() ) : ?>
-					<p class="entry-sub"><?php echo esc_html( get_the_excerpt() ); ?></p>
+					<p class="page-head__sub"><?php echo esc_html( get_the_excerpt() ); ?></p>
 				<?php endif; ?>
 
-				<div class="project-hero-actions">
-					<?php if ( $github ) : ?>
-						<a class="btn btn-primary" href="<?php echo esc_url( $github ); ?>" target="_blank" rel="noopener noreferrer">
-							<?php esc_html_e( 'View source on GitHub', 'boltfolio' ); ?>
-						</a>
-					<?php endif; ?>
-					<?php if ( $live ) : ?>
-						<a class="btn btn-ghost" href="<?php echo esc_url( $live ); ?>" target="_blank" rel="noopener noreferrer">
-							<?php esc_html_e( 'Live site', 'boltfolio' ); ?> ↗
-						</a>
-					<?php endif; ?>
-				</div>
+				<?php if ( is_array( $boltfolio_terms ) && $boltfolio_terms ) : ?>
+					<div class="page-head__meta">
+						<?php foreach ( $boltfolio_terms as $boltfolio_term ) : ?>
+							<a class="tag tag--accent" href="<?php echo esc_url( (string) get_term_link( $boltfolio_term ) ); ?>"><?php echo esc_html( $boltfolio_term->name ); ?></a>
+						<?php endforeach; ?>
+						<span class="tag"><?php echo esc_html( get_the_date( 'Y' ) ); ?></span>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( $boltfolio_github || $boltfolio_live ) : ?>
+					<div class="btn-row" style="margin-top:1.5rem">
+						<?php if ( $boltfolio_github ) : ?>
+							<a class="btn" href="<?php echo esc_url( $boltfolio_github ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'View source', 'boltfolio' ); ?></a>
+						<?php endif; ?>
+						<?php if ( $boltfolio_live ) : ?>
+							<a class="btn btn--ghost" href="<?php echo esc_url( $boltfolio_live ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Live site', 'boltfolio' ); ?></a>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
 			</header>
 
-			<?php if ( has_post_thumbnail() ) : ?>
-				<figure class="featured-media"><?php the_post_thumbnail( 'large' ); ?></figure>
-			<?php endif; ?>
-
-			<div class="entry-content">
+			<div class="entry-content prose section">
 				<?php the_content(); ?>
 			</div>
 
 			<?php
-			// Related projects: same primary term, else latest others.
-			$related_args = array(
+			// If this project has documentation, say so — it is the most
+			// useful thing a reader of a plugin page can be sent to.
+			$boltfolio_doc_roots = get_posts(
+				array(
+					'post_type'      => Boltfolio_Docs::POST_TYPE,
+					'post_status'    => 'publish',
+					'posts_per_page' => -1,
+					'post_parent'    => 0,
+					'fields'         => 'ids',
+					's'              => get_the_title(),
+				)
+			);
+
+			if ( $boltfolio_doc_roots ) :
+				?>
+				<aside class="band section section--tight">
+					<p class="eyebrow"><?php esc_html_e( 'Documentation', 'boltfolio' ); ?></p>
+					<h2 class="band__title"><?php esc_html_e( 'This project is documented in full', 'boltfolio' ); ?></h2>
+					<p class="band__text"><?php esc_html_e( 'Setup, configuration, hooks, WP-CLI commands and a method-level source reference.', 'boltfolio' ); ?></p>
+					<div class="btn-row band__foot">
+						<a class="btn" href="<?php echo esc_url( (string) get_permalink( $boltfolio_doc_roots[0] ) ); ?>"><?php esc_html_e( 'Read the documentation', 'boltfolio' ); ?></a>
+					</div>
+				</aside>
+			<?php endif; ?>
+
+			<?php
+			$boltfolio_related_args = array(
 				'post_type'           => 'project',
 				'posts_per_page'      => 3,
-				'post__not_in'        => array( get_the_ID() ),
+				'post__not_in'        => array( $boltfolio_id ),
 				'post_status'         => 'publish',
-				'orderby'             => 'rand',
+				'orderby'             => 'menu_order date',
+				'order'               => 'DESC',
 				'ignore_sticky_posts' => true,
 				'no_found_rows'       => true,
 			);
 
-			$terms = get_the_terms( get_the_ID(), Boltfolio_Projects::TAXONOMY );
-			if ( is_array( $terms ) && ! empty( $terms ) ) {
-				$related_args['tax_query'] = array(
+			if ( is_array( $boltfolio_terms ) && $boltfolio_terms ) {
+				$boltfolio_related_args['tax_query'] = array(
 					array(
 						'taxonomy' => Boltfolio_Projects::TAXONOMY,
 						'field'    => 'term_id',
-						'terms'    => wp_list_pluck( $terms, 'term_id' ),
+						'terms'    => wp_list_pluck( $boltfolio_terms, 'term_id' ),
 					),
 				);
 			}
 
-			$related = new WP_Query( $related_args );
+			$boltfolio_related = new WP_Query( $boltfolio_related_args );
 
-			if ( ! $related->have_posts() && isset( $related_args['tax_query'] ) ) {
-				// Sole project of its type — fall back to latest others.
-				unset( $related_args['tax_query'] );
-				$related = new WP_Query( $related_args );
+			if ( ! $boltfolio_related->have_posts() && isset( $boltfolio_related_args['tax_query'] ) ) {
+				unset( $boltfolio_related_args['tax_query'] );
+				$boltfolio_related = new WP_Query( $boltfolio_related_args );
 			}
 
-			if ( $related->have_posts() ) :
+			if ( $boltfolio_related->have_posts() ) :
 				?>
-				<section class="section section-alt related-projects">
-					<h2 class="section-title related-projects-title"><?php esc_html_e( 'More projects', 'boltfolio' ); ?></h2>
-					<div class="project-grid">
+				<section class="section" aria-labelledby="related-title">
+					<header class="shead">
+						<div class="shead__top">
+							<h2 class="shead__title" id="related-title"><?php esc_html_e( 'Other work', 'boltfolio' ); ?></h2>
+							<a class="arrow-link" href="<?php echo esc_url( (string) get_post_type_archive_link( 'project' ) ); ?>"><?php esc_html_e( 'All projects', 'boltfolio' ); ?></a>
+						</div>
+					</header>
+
+					<ul class="index">
 						<?php
-						while ( $related->have_posts() ) :
-							$related->the_post();
-							boltfolio_project_card();
+						$boltfolio_i = 0;
+
+						while ( $boltfolio_related->have_posts() ) :
+							$boltfolio_related->the_post();
+							boltfolio_project_row( (int) get_the_ID(), $boltfolio_i );
+							++$boltfolio_i;
 						endwhile;
+
 						wp_reset_postdata();
 						?>
-					</div>
+					</ul>
 				</section>
 				<?php
 			endif;
 			?>
+
 		</div>
 	</article>
 	<?php

@@ -1,1 +1,14 @@
-.callout,.wp-block-boltfolio-callout{border:1px solid;border-radius:10px;display:flex;font-size:.95rem;gap:.9rem;margin:1.5rem 0;padding:1rem 1.2rem}.callout .callout-icon,.wp-block-boltfolio-callout .callout-icon{display:inline-flex;flex-shrink:0;margin-top:.15rem}.callout .callout-title,.wp-block-boltfolio-callout .callout-title{font-weight:700;margin:0 0 .25rem}.callout .callout-body>:first-child,.wp-block-boltfolio-callout .callout-body>:first-child{margin-top:0}.callout .callout-body>:last-child,.wp-block-boltfolio-callout .callout-body>:last-child{margin-bottom:0}.callout.callout-info,.wp-block-boltfolio-callout.callout-info{background:rgba(96,165,250,.09);border-color:rgba(96,165,250,.35)}.callout.callout-info .callout-icon,.callout.callout-info .callout-title,.wp-block-boltfolio-callout.callout-info .callout-icon,.wp-block-boltfolio-callout.callout-info .callout-title{color:#3b82f6}.callout.callout-tip,.wp-block-boltfolio-callout.callout-tip{background:rgba(234,179,8,.09);border-color:rgba(234,179,8,.35)}.callout.callout-tip .callout-icon,.callout.callout-tip .callout-title,.wp-block-boltfolio-callout.callout-tip .callout-icon,.wp-block-boltfolio-callout.callout-tip .callout-title{color:#eab308}.callout.callout-warning,.wp-block-boltfolio-callout.callout-warning{background:hsla(0,91%,71%,.08);border-color:hsla(0,91%,71%,.38)}.callout.callout-warning .callout-icon,.callout.callout-warning .callout-title,.wp-block-boltfolio-callout.callout-warning .callout-icon,.wp-block-boltfolio-callout.callout-warning .callout-title{color:#f87171}
+/* Callout — dark instrument styling.
+   Colours fall back to literals so the block still reads correctly in
+   the editor, where the theme's custom properties may not be present. */
+.callout,.wp-block-boltfolio-callout{border:1px solid var(--line-2,rgba(237,233,224,.14));border-left-width:2px;background:var(--surface-2,#1b1b18);display:flex;font-size:.9375rem;line-height:1.65;gap:.9rem;margin:1.6rem 0;padding:1rem 1.2rem}
+.callout .callout-icon,.wp-block-boltfolio-callout .callout-icon{display:inline-flex;flex-shrink:0;margin-top:.15rem;color:var(--ivory-3,#7d7972)}
+.callout .callout-title,.wp-block-boltfolio-callout .callout-title{color:var(--ivory,#efebe2);font-weight:600;margin:0 0 .3rem}
+.callout .callout-body>:first-child,.wp-block-boltfolio-callout .callout-body>:first-child{margin-top:0}
+.callout .callout-body>:last-child,.wp-block-boltfolio-callout .callout-body>:last-child{margin-bottom:0}
+.callout.callout-info,.wp-block-boltfolio-callout.callout-info{border-left-color:var(--brass,#d9a93e)}
+.callout.callout-info .callout-icon,.wp-block-boltfolio-callout.callout-info .callout-icon{color:var(--brass,#d9a93e)}
+.callout.callout-tip,.wp-block-boltfolio-callout.callout-tip{border-left-color:var(--ok,#7fb08a)}
+.callout.callout-tip .callout-icon,.wp-block-boltfolio-callout.callout-tip .callout-icon{color:var(--ok,#7fb08a)}
+.callout.callout-warning,.wp-block-boltfolio-callout.callout-warning{border-left-color:var(--wf-paint,#d97b4a)}
+.callout.callout-warning .callout-icon,.wp-block-boltfolio-callout.callout-warning .callout-icon{color:var(--wf-paint,#d97b4a)}

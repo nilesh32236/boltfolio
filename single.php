@@ -11,12 +11,33 @@ while ( have_posts() ) :
 	the_post();
 	?>
 	<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-		<div class="bolt-container">
-			<header class="entry-header">
-				<?php boltfolio_breadcrumbs(); ?>
-				<h1 class="entry-title"><?php the_title(); ?></h1>
-				<div class="entry-meta">
-					<time datetime="<?php echo esc_attr( get_the_date( DATE_W3C ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
+		<div class="shell shell--narrow">
+			<header class="page-head">
+				<?php
+				boltfolio_crumbs(
+					array(
+						array(
+							'label' => __( 'Home', 'boltfolio' ),
+							'url'   => home_url( '/' ),
+						),
+						array(
+							'label' => __( 'Writing', 'boltfolio' ),
+							'url'   => (string) get_permalink( (int) get_option( 'page_for_posts' ) ),
+						),
+						array( 'label' => get_the_title() ),
+					)
+				);
+				?>
+
+				<h1 class="page-head__title"><?php the_title(); ?></h1>
+
+				<?php if ( get_the_excerpt() ) : ?>
+					<p class="page-head__sub"><?php echo esc_html( get_the_excerpt() ); ?></p>
+				<?php endif; ?>
+
+				<div class="page-head__meta">
+					<span class="tag"><?php echo esc_html( get_the_date() ); ?></span>
+					<span class="tag"><?php echo esc_html( (string) boltfolio_reading_time() ); ?> <?php esc_html_e( 'min read', 'boltfolio' ); ?></span>
 				</div>
 			</header>
 
@@ -24,9 +45,10 @@ while ( have_posts() ) :
 				<figure class="featured-media"><?php the_post_thumbnail( 'large' ); ?></figure>
 			<?php endif; ?>
 
-			<div class="entry-content">
+			<div class="entry-content prose section">
 				<?php
 				the_content();
+
 				wp_link_pages(
 					array(
 						'before' => '<div class="page-links">' . esc_html__( 'Pages:', 'boltfolio' ),
@@ -36,12 +58,32 @@ while ( have_posts() ) :
 				?>
 			</div>
 
-			<nav class="post-nav">
-				<?php
-				previous_post_link( '<span>&larr; %link</span>' );
-				next_post_link( '<span>%link &rarr;</span>' );
+			<?php
+			$boltfolio_prev = get_previous_post();
+			$boltfolio_next = get_next_post();
+
+			if ( $boltfolio_prev || $boltfolio_next ) :
 				?>
-			</nav>
+				<nav class="pager" aria-label="<?php esc_attr_e( 'Posts', 'boltfolio' ); ?>">
+					<?php if ( $boltfolio_prev ) : ?>
+						<a href="<?php echo esc_url( (string) get_permalink( $boltfolio_prev ) ); ?>">
+							<span class="pager__label">&larr; <?php esc_html_e( 'Previous', 'boltfolio' ); ?></span>
+							<span class="pager__title"><?php echo esc_html( get_the_title( $boltfolio_prev ) ); ?></span>
+						</a>
+					<?php else : ?>
+						<span></span>
+					<?php endif; ?>
+
+					<?php if ( $boltfolio_next ) : ?>
+						<a class="pager__next" href="<?php echo esc_url( (string) get_permalink( $boltfolio_next ) ); ?>">
+							<span class="pager__label"><?php esc_html_e( 'Next', 'boltfolio' ); ?> &rarr;</span>
+							<span class="pager__title"><?php echo esc_html( get_the_title( $boltfolio_next ) ); ?></span>
+						</a>
+					<?php else : ?>
+						<span></span>
+					<?php endif; ?>
+				</nav>
+			<?php endif; ?>
 		</div>
 	</article>
 	<?php

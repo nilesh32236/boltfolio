@@ -1,36 +1,121 @@
 <?php
 /**
- * Front page: hero, featured projects, skills, approach and contact CTA.
+ * Front page.
+ *
+ * The hero states the thesis and then proves it: the chart beside the
+ * headline is this page measuring its own load in the reader's browser.
  *
  * @package boltfolio
  */
 
 get_header();
 
-$projects_url = get_post_type_archive_link( 'project' );
+$boltfolio_projects_url = (string) get_post_type_archive_link( 'project' );
+$boltfolio_docs_url     = (string) get_post_type_archive_link( Boltfolio_Docs::POST_TYPE );
+$boltfolio_stats        = boltfolio_stats();
+$boltfolio_version      = boltfolio_documented_version();
 ?>
 
 <section class="hero">
-	<div class="bolt-container">
-		<p class="hero-kicker"><?php esc_html_e( 'WordPress Performance Engineer', 'boltfolio' ); ?></p>
-		<h1 class="hero-title">Nilesh <span class="accent">Kanzariya</span></h1>
-		<p class="hero-tagline">
-			<?php esc_html_e( 'I build fast WordPress sites and open-source tooling — from custom object-cache drop-ins and stream-based minification to Rust MCP servers and AI-powered code review.', 'boltfolio' ); ?>
-		</p>
-		<div class="hero-actions">
-			<?php if ( $projects_url ) : ?>
-				<a class="btn btn-primary" href="<?php echo esc_url( $projects_url ); ?>"><?php esc_html_e( 'View Projects', 'boltfolio' ); ?></a>
-			<?php endif; ?>
-			<a class="btn btn-ghost" href="<?php echo esc_url( home_url( '/contact/' ) ); ?>"><?php esc_html_e( 'Get in Touch', 'boltfolio' ); ?></a>
+	<div class="shell">
+		<div class="hero__grid">
+
+			<div>
+				<p class="eyebrow"><?php esc_html_e( 'WordPress Performance Engineer', 'boltfolio' ); ?></p>
+
+				<h1 class="hero__title">
+					<?php
+					printf(
+						/* translators: %s: emphasised word in the headline. */
+						esc_html__( 'I make WordPress load %s faster.', 'boltfolio' ),
+						'<em>' . esc_html__( 'measurably', 'boltfolio' ) . '</em>'
+					);
+					?>
+				</h1>
+
+				<p class="hero__lede">
+					<?php esc_html_e( 'I build the caching layers, asset pipelines and database work that decide whether a WordPress site feels instant. The chart beside this text is not an illustration — it is this page, measuring itself in your browser as it loads.', 'boltfolio' ); ?>
+				</p>
+
+				<div class="btn-row hero__actions">
+					<?php if ( $boltfolio_projects_url ) : ?>
+						<a class="btn" href="<?php echo esc_url( $boltfolio_projects_url ); ?>"><?php esc_html_e( 'See the work', 'boltfolio' ); ?></a>
+					<?php endif; ?>
+					<a class="btn btn--ghost" href="<?php echo esc_url( $boltfolio_docs_url ); ?>"><?php esc_html_e( 'Read the docs', 'boltfolio' ); ?></a>
+				</div>
+			</div>
+
+			<figure class="wf" data-waterfall data-state="pending">
+				<div class="wf__head">
+					<span class="wf__title"><?php esc_html_e( 'Navigation timing', 'boltfolio' ); ?></span>
+					<span class="wf__status" data-wf-status><span class="wf__dot" aria-hidden="true"></span><?php esc_html_e( 'measuring', 'boltfolio' ); ?></span>
+				</div>
+
+				<ol class="wf__rows" data-wf-rows>
+					<?php
+					// Server-rendered skeleton: the phase names are real and
+					// appear before any script runs, so the figure is legible
+					// even if the measurement never arrives.
+					$boltfolio_phases = array(
+						__( 'Waiting', 'boltfolio' ),
+						__( 'Download', 'boltfolio' ),
+						__( 'Parse', 'boltfolio' ),
+						__( 'First paint', 'boltfolio' ),
+					);
+
+					foreach ( $boltfolio_phases as $boltfolio_phase ) :
+						?>
+						<li class="wf__row" data-empty="true">
+							<span class="wf__label"><?php echo esc_html( $boltfolio_phase ); ?></span>
+							<span class="wf__track"><span class="wf__bar"></span></span>
+							<span class="wf__ms">&mdash;</span>
+						</li>
+					<?php endforeach; ?>
+				</ol>
+
+				<div class="wf__axis" data-wf-axis aria-hidden="true">
+					<span>0</span><span>0.25</span><span>0.50</span><span>0.75</span><span>1.0</span>
+				</div>
+
+				<p class="wf__fallback">
+					<?php esc_html_e( 'Your browser did not expose navigation timing for this page, so the chart cannot be drawn.', 'boltfolio' ); ?>
+				</p>
+
+				<figcaption class="wf__cap">
+					<strong><?php esc_html_e( 'Measured live.', 'boltfolio' ); ?></strong>
+					<?php esc_html_e( 'Every bar is a real phase from the Navigation Timing API for this page load — nothing here is a stock chart.', 'boltfolio' ); ?>
+				</figcaption>
+			</figure>
+
 		</div>
-		<div class="hero-socials">
-			<?php boltfolio_social_icons(); ?>
+
+		<div class="hero__metrics" data-metrics>
+			<div class="metric">
+				<span class="metric__label"><?php esc_html_e( 'Time to first byte', 'boltfolio' ); ?></span>
+				<span class="metric__value" data-metric="ttfb" data-pending>&mdash;</span>
+				<span class="metric__note"><?php esc_html_e( 'Server response', 'boltfolio' ); ?></span>
+			</div>
+			<div class="metric">
+				<span class="metric__label"><?php esc_html_e( 'Largest paint', 'boltfolio' ); ?></span>
+				<span class="metric__value" data-metric="lcp" data-pending>&mdash;</span>
+				<span class="metric__note"><?php esc_html_e( 'LCP, Core Web Vital', 'boltfolio' ); ?></span>
+			</div>
+			<div class="metric">
+				<span class="metric__label"><?php esc_html_e( 'Page weight', 'boltfolio' ); ?></span>
+				<span class="metric__value" data-metric="weight" data-pending>&mdash;</span>
+				<span class="metric__note"><?php esc_html_e( 'Transferred, compressed', 'boltfolio' ); ?></span>
+			</div>
+			<div class="metric">
+				<span class="metric__label"><?php esc_html_e( 'Requests', 'boltfolio' ); ?></span>
+				<span class="metric__value" data-metric="requests" data-pending>&mdash;</span>
+				<span class="metric__note"><?php esc_html_e( 'Including this document', 'boltfolio' ); ?></span>
+			</div>
 		</div>
 	</div>
 </section>
 
 <?php
-$featured = new WP_Query(
+$boltfolio_projects = new WP_Query(
 	array(
 		'post_type'           => 'project',
 		'posts_per_page'      => 6,
@@ -44,103 +129,165 @@ $featured = new WP_Query(
 	)
 );
 ?>
-<section class="section section-alt" id="projects">
-	<div class="bolt-container">
-		<div class="section-head">
-			<p class="section-kicker"><?php esc_html_e( 'Selected Work', 'boltfolio' ); ?></p>
-			<h2 class="section-title"><?php esc_html_e( 'Projects built for speed', 'boltfolio' ); ?></h2>
-			<p class="section-desc"><?php esc_html_e( 'Flagship WordPress performance engineering and open-source experiments — every repo is public.', 'boltfolio' ); ?></p>
-		</div>
 
-		<?php if ( $featured->have_posts() ) : ?>
-			<div class="project-grid">
+<?php if ( $boltfolio_projects->have_posts() ) : ?>
+	<section class="section" id="work">
+		<div class="shell">
+			<header class="shead">
+				<div class="shead__top">
+					<div>
+						<p class="eyebrow"><?php esc_html_e( 'Selected work', 'boltfolio' ); ?></p>
+						<h2 class="shead__title"><?php esc_html_e( 'Six projects, every repository public', 'boltfolio' ); ?></h2>
+					</div>
+					<p class="shead__aside">
+						<?php
+						printf(
+							/* translators: %d: number of documented source files. */
+							esc_html__( 'A flagship WordPress performance plugin with %d documented source files, plus open-source tooling in Rust, Go and TypeScript.', 'boltfolio' ),
+							(int) ( $boltfolio_stats['classes'] ?? 0 )
+						);
+						?>
+					</p>
+				</div>
+			</header>
+
+			<ul class="index">
 				<?php
-				while ( $featured->have_posts() ) :
-					$featured->the_post();
-					boltfolio_project_card();
+				$boltfolio_i = 0;
+
+				while ( $boltfolio_projects->have_posts() ) :
+					$boltfolio_projects->the_post();
+					boltfolio_project_row( (int) get_the_ID(), $boltfolio_i );
+					++$boltfolio_i;
 				endwhile;
+
 				wp_reset_postdata();
 				?>
-			</div>
+			</ul>
 
-			<?php if ( $projects_url ) : ?>
-				<div class="section-foot">
-					<a class="btn btn-ghost" href="<?php echo esc_url( $projects_url ); ?>"><?php esc_html_e( 'Browse all projects', 'boltfolio' ); ?> &rarr;</a>
+			<?php if ( $boltfolio_projects_url ) : ?>
+				<div class="btn-row mt-2">
+					<a class="arrow-link" href="<?php echo esc_url( $boltfolio_projects_url ); ?>"><?php esc_html_e( 'All projects', 'boltfolio' ); ?></a>
 				</div>
 			<?php endif; ?>
-		<?php else : ?>
-			<p><?php esc_html_e( 'Projects are being prepared. Check back soon.', 'boltfolio' ); ?></p>
-		<?php endif; ?>
+		</div>
+	</section>
+<?php endif; ?>
+
+<section class="section" id="capabilities">
+	<div class="shell">
+		<header class="shead">
+			<div class="shead__top">
+				<div>
+					<p class="eyebrow"><?php esc_html_e( 'Capability', 'boltfolio' ); ?></p>
+					<h2 class="shead__title"><?php esc_html_e( 'Where the milliseconds actually go', 'boltfolio' ); ?></h2>
+				</div>
+				<p class="shead__aside">
+					<?php esc_html_e( 'Surface-level settings panels are not optimisation. The work happens in the architecture, and it starts with a profile rather than a guess.', 'boltfolio' ); ?>
+				</p>
+			</div>
+		</header>
+
+		<div class="spec">
+			<div class="spec__row">
+				<p class="spec__key">
+					<b><?php esc_html_e( 'Caching architecture', 'boltfolio' ); ?></b>
+					<?php esc_html_e( 'Page · object · edge', 'boltfolio' ); ?>
+				</p>
+				<p class="spec__val">
+					<?php esc_html_e( 'Hand-written <code>object-cache.php</code> and <code>advanced-cache.php</code> drop-ins, Redis connection handling with TLS and clustering, and cache purging that stays correct when content changes underneath it.', 'boltfolio' ); ?>
+				</p>
+			</div>
+
+			<div class="spec__row">
+				<p class="spec__key">
+					<b><?php esc_html_e( 'Asset pipeline', 'boltfolio' ); ?></b>
+					<?php esc_html_e( 'Minify · combine · defer', 'boltfolio' ); ?>
+				</p>
+				<p class="spec__val">
+					<?php esc_html_e( 'CSS and JavaScript processed with stream reads rather than regex sweeps, so memory stays flat on large files. Per-page unloading removes render-blocking assets from the pages where they do nothing.', 'boltfolio' ); ?>
+				</p>
+			</div>
+
+			<div class="spec__row">
+				<p class="spec__key">
+					<b><?php esc_html_e( 'Media and LCP', 'boltfolio' ); ?></b>
+					<?php esc_html_e( 'WebP · AVIF · critical CSS', 'boltfolio' ); ?>
+				</p>
+				<p class="spec__val">
+					<?php esc_html_e( 'Conversion pipelines that generate modern formats alongside the original, lazy-loading that knows what is above the fold, and used-CSS extraction that inlines only what the first paint needs.', 'boltfolio' ); ?>
+				</p>
+			</div>
+
+			<div class="spec__row">
+				<p class="spec__key">
+					<b><?php esc_html_e( 'Measurement', 'boltfolio' ); ?></b>
+					<?php esc_html_e( 'RUM · PageSpeed · profiling', 'boltfolio' ); ?>
+				</p>
+				<p class="spec__val">
+					<?php esc_html_e( 'Real-user monitoring with a first-party beacon so field data is not blocked by ad blockers, PageSpeed Insights pulled into the dashboard, and query-level profiling before any index is touched.', 'boltfolio' ); ?>
+				</p>
+			</div>
+
+			<div class="spec__row">
+				<p class="spec__key">
+					<b><?php esc_html_e( 'Build tooling', 'boltfolio' ); ?></b>
+					<?php esc_html_e( 'Webpack · block editor', 'boltfolio' ); ?>
+				</p>
+				<p class="spec__val">
+					<?php esc_html_e( 'Custom Gutenberg block suites, asset bundling with code splitting, and build pipelines that keep editor and front-end output byte-identical.', 'boltfolio' ); ?>
+				</p>
+			</div>
+		</div>
 	</div>
 </section>
 
-<section class="section" id="skills">
-	<div class="bolt-container">
-		<div class="section-head">
-			<p class="section-kicker"><?php esc_html_e( 'Technical Skills', 'boltfolio' ); ?></p>
-			<h2 class="section-title"><?php esc_html_e( 'Deep, code-level optimization', 'boltfolio' ); ?></h2>
-		</div>
+<section class="section section--tight" id="plugin">
+	<div class="shell">
+		<div class="band">
+			<p class="eyebrow"><?php esc_html_e( 'Open source', 'boltfolio' ); ?></p>
 
-		<div class="skills-grid">
-			<div class="skill-card">
-				<h3><?php esc_html_e( 'Advanced Caching Architecture', 'boltfolio' ); ?></h3>
-				<p><?php esc_html_e( 'Custom caching layers built from the ground up, including hand-written object-cache drop-ins that cut database load and drop Time to First Byte.', 'boltfolio' ); ?></p>
-			</div>
-			<div class="skill-card">
-				<h3><?php esc_html_e( 'Stream-Based Minification', 'boltfolio' ); ?></h3>
-				<p><?php esc_html_e( 'CSS and JavaScript minification engineered around efficient stream reads instead of naive regex passes — better memory use and faster processing at scale.', 'boltfolio' ); ?></p>
-			</div>
-			<div class="skill-card">
-				<h3><?php esc_html_e( 'Per-Page Asset Control', 'boltfolio' ); ?></h3>
-				<p><?php esc_html_e( 'Granular exclusion logic to unload individual scripts and styles on any page, eliminating render-blocking resources where they do nothing but hurt.', 'boltfolio' ); ?></p>
-			</div>
-			<div class="skill-card">
-				<h3><?php esc_html_e( 'Media &amp; LCP Optimization', 'boltfolio' ); ?></h3>
-				<p><?php esc_html_e( 'Enhanced lazy-loading strategies for images and heavy embeds that shrink initial page weight and pull Largest Contentful Paint into shape.', 'boltfolio' ); ?></p>
-			</div>
-			<div class="skill-card">
-				<h3><?php esc_html_e( 'Webpack Build Pipelines', 'boltfolio' ); ?></h3>
-				<p><?php esc_html_e( 'Modern asset bundling and workflow automation for themes and plugins — optimized bundles, code splitting and clean CSS output.', 'boltfolio' ); ?></p>
-			</div>
-			<div class="skill-card">
-				<h3><?php esc_html_e( 'Profiling &amp; Query Tuning', 'boltfolio' ); ?></h3>
-				<p><?php esc_html_e( 'Backend debugging with Code Profiler: bottleneck hunts, database query audits and targeted fixes instead of guesswork.', 'boltfolio' ); ?></p>
+			<h2 class="band__title"><?php esc_html_e( 'Performance Optimisation is documented down to the method signature', 'boltfolio' ); ?></h2>
+
+			<p class="band__text">
+				<?php
+				printf(
+					/* translators: 1: number of documented source files, 2: number of documentation pages. */
+					esc_html__( 'The plugin ships with %1$d source files written up across %2$d reference pages — every class, hook, WP-CLI command and REST route, with the parameter tables and return types you need to extend it without reading the code first.', 'boltfolio' ),
+					(int) ( $boltfolio_stats['classes'] ?? 0 ),
+					(int) ( $boltfolio_stats['docs'] ?? 0 )
+				);
+				?>
+			</p>
+
+			<div class="btn-row band__foot">
+				<a class="btn" href="<?php echo esc_url( $boltfolio_docs_url ); ?>"><?php esc_html_e( 'Read the documentation', 'boltfolio' ); ?></a>
+				<a class="btn btn--ghost" href="https://github.com/nilesh32236/performance-optimisation" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Source on GitHub', 'boltfolio' ); ?></a>
+				<?php if ( $boltfolio_version ) : ?>
+					<span class="meta">v<?php echo esc_html( $boltfolio_version ); ?></span>
+				<?php endif; ?>
 			</div>
 		</div>
-	</div>
-</section>
-
-<section class="section section-alt" id="approach">
-	<div class="bolt-container">
-		<div class="section-head">
-			<p class="section-kicker"><?php esc_html_e( 'Development Approach', 'boltfolio' ); ?></p>
-			<h2 class="section-title"><?php esc_html_e( 'Benchmark-driven, not plugin-config-driven', 'boltfolio' ); ?></h2>
-			<p class="section-desc"><?php esc_html_e( 'Surface-level settings panels are not optimization. The work happens at the architecture level.', 'boltfolio' ); ?></p>
-		</div>
-
-		<ul class="approach-list">
-			<li>
-				<span><strong><?php esc_html_e( 'Reverse-engineering market leaders.', 'boltfolio' ); ?></strong> <?php esc_html_e( 'Feature sets from WP Rocket, LiteSpeed Cache, NitroPack, FlyingPress, Asset CleanUp and WP-Optimize are benchmarked and dissected before anything gets built.', 'boltfolio' ); ?></span>
-			</li>
-			<li>
-				<span><strong><?php esc_html_e( 'Profiling before optimizing.', 'boltfolio' ); ?></strong> <?php esc_html_e( 'Every bottleneck is proven with profiling data first — then fixed with the smallest correct change, never shotgun tweaks.', 'boltfolio' ); ?></span>
-			</li>
-			<li>
-				<span><strong><?php esc_html_e( 'Pushing WordPress rendering forward.', 'boltfolio' ); ?></strong> <?php esc_html_e( 'Active research into SPA-style navigation inside WordPress, drawing on concepts from AjaxPress to blur the line between classic MPA rendering and app-like speed.', 'boltfolio' ); ?></span>
-			</li>
-		</ul>
 	</div>
 </section>
 
 <section class="section" id="contact-cta">
-	<div class="bolt-container">
-		<div class="cta-band">
-			<h2><?php esc_html_e( 'Need a faster WordPress site?', 'boltfolio' ); ?></h2>
-			<p><?php esc_html_e( 'Performance audits, custom caching solutions and code-level optimization work. Open source is where I share everything I learn along the way.', 'boltfolio' ); ?></p>
-			<div class="hero-actions hero-actions-centered">
-				<a class="btn btn-primary" href="mailto:nilesh.kanzariya912@gmail.com"><?php esc_html_e( 'Email me', 'boltfolio' ); ?></a>
-				<a class="btn btn-ghost" href="https://github.com/nilesh32236" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'GitHub', 'boltfolio' ); ?></a>
+	<div class="shell">
+		<header class="shead">
+			<div class="shead__top">
+				<div>
+					<p class="eyebrow"><?php esc_html_e( 'Available for work', 'boltfolio' ); ?></p>
+					<h2 class="shead__title"><?php esc_html_e( 'Need a faster WordPress site?', 'boltfolio' ); ?></h2>
+				</div>
+				<p class="shead__aside">
+					<?php esc_html_e( 'Performance audits, custom caching work and code-level optimisation. You get the measurements alongside the changes, so the improvement is verifiable rather than asserted.', 'boltfolio' ); ?>
+				</p>
 			</div>
+		</header>
+
+		<div class="btn-row">
+			<a class="btn" href="mailto:nilesh.kanzariya912@gmail.com"><?php esc_html_e( 'Email me', 'boltfolio' ); ?></a>
+			<a class="btn btn--ghost" href="https://github.com/nilesh32236" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'GitHub', 'boltfolio' ); ?></a>
 		</div>
 	</div>
 </section>

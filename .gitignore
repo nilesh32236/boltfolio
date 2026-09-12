@@ -8,3 +8,6 @@ Thumbs.db
 
 # Local env
 .wp-env.json
+
+# Local development tooling (QA harness, screenshots, migration logs).
+.qa/

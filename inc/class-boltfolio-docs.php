@@ -164,53 +164,88 @@ final class Boltfolio_Docs {
 	}
 
 	/**
-	 * Render the docs sidebar navigation tree (children of a parent doc),
-	 * in document order, as `<li>` elements compatible with the existing
-	 * `.docs-nav` styles (current_page_item / current_page_ancestor).
+	 * Render the docs sidebar as grouped disclosures.
 	 *
-	 * @param int           $parent_id    Parent doc ID whose children are listed.
-	 * @param int           $current_id   Currently viewed doc ID.
-	 * @param array<int>    $ancestor_ids Ancestor IDs of the current doc.
-	 * @param int           $depth        Current tree depth.
-	 * @param bool          $include_root Whether to render the parent itself as the first item.
+	 * The reference tree runs to dozens of entries, so a flat list is
+	 * unusable: every first-level branch becomes a <details> that opens
+	 * only when the reader is inside it. Counts are shown so a collapsed
+	 * group still communicates how much it holds.
+	 *
+	 * @param int        $root_id      Root doc whose children form the groups.
+	 * @param int        $current_id   Currently viewed doc ID.
+	 * @param array<int> $ancestor_ids Ancestors of the current doc.
 	 * @return void
 	 */
-	public static function render_nav_tree( int $parent_id, int $current_id, array $ancestor_ids, int $depth = 0, bool $include_root = false ): void {
-		if ( $depth >= 4 ) {
+	public static function render_grouped_nav( int $root_id, int $current_id, array $ancestor_ids ): void {
+		$groups = self::doc_children( $root_id );
+
+		if ( ! $groups ) {
 			return;
 		}
 
-		if ( $include_root ) {
-			$classes = 'page_item';
+		foreach ( $groups as $group ) {
+			$group_id    = (int) $group->ID;
+			$children    = self::doc_children( $group_id );
+			$is_current  = $group_id === $current_id;
+			$in_path     = in_array( $group_id, $ancestor_ids, true );
+			$total       = $children ? self::count_descendants( $group_id ) : 0;
 
-			if ( $current_id === $parent_id ) {
-				$classes .= ' current_page_item';
-			} elseif ( in_array( $parent_id, $ancestor_ids, true ) ) {
-				$classes .= ' current_page_ancestor';
+			// A group with no children is a plain link, not a disclosure.
+			if ( ! $children ) {
+				printf(
+					'<li class="%1$s"><a href="%2$s">%3$s</a></li>',
+					esc_attr( $is_current ? 'page_item current_page_item' : 'page_item' ),
+					esc_url( get_permalink( $group ) ),
+					esc_html( self::display_title( $group->post_title ) )
+				);
+				continue;
 			}
 
 			printf(
-				'<li class="%1$s"><a href="%2$s">%3$s</a>',
-				esc_attr( $classes ),
-				esc_url( get_permalink( $parent_id ) ),
-				esc_html( get_the_title( $parent_id ) )
+				'<li><details class="docnav-group"%1$s><summary>%2$s<span class="docnav-group__count">%3$d</span></summary><div class="docnav-group__body%4$s"><ul>',
+				( $is_current || $in_path ) ? ' open' : '',
+				esc_html( self::display_title( $group->post_title ) ),
+				(int) $total,
+				self::is_file_group( $children ) ? ' docnav-group__body--files' : ''
 			);
 
-			ob_start();
-			self::render_nav_tree( $parent_id, $current_id, $ancestor_ids, $depth + 1 );
-			$nested = (string) ob_get_clean();
+			// Link the group's own page above its children.
+			printf(
+				'<li class="%1$s"><a href="%2$s">%3$s</a></li>',
+				esc_attr( $is_current ? 'page_item current_page_item' : 'page_item' ),
+				esc_url( get_permalink( $group ) ),
+				esc_html__( 'Overview', 'boltfolio' )
+			);
 
-			if ( '' !== $nested ) {
-				echo '<ul class="children">' . $nested . '</ul>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- composed of escaped fragments.
-			}
+			self::render_children( $group_id, $current_id, $ancestor_ids );
 
-			echo '</li>';
+			echo '</ul></div></details></li>';
+		}
+	}
+
+	/**
+	 * Render descendant links for one branch.
+	 *
+	 * A branch with children of its own becomes a nested disclosure
+	 * rather than a wall of links: the core-classes reference alone runs
+	 * to forty-odd pages, so only the active branch opens.
+	 *
+	 * @param int        $parent_id    Branch root.
+	 * @param int        $current_id   Current doc ID.
+	 * @param array<int> $ancestor_ids Ancestors of the current doc.
+	 * @param int        $depth        Recursion guard.
+	 * @return void
+	 */
+	private static function render_children( int $parent_id, int $current_id, array $ancestor_ids, int $depth = 0 ): void {
+		if ( $depth >= 3 ) {
 			return;
 		}
 
 		foreach ( self::doc_children( $parent_id ) as $child ) {
-			$child_id = (int) $child->ID;
-			$classes  = 'page_item';
+			$child_id      = (int) $child->ID;
+			$grandchildren = self::doc_children( $child_id );
+			$in_path       = $child_id === $current_id || in_array( $child_id, $ancestor_ids, true );
+			$classes       = 'page_item';
 
 			if ( $child_id === $current_id ) {
 				$classes .= ' current_page_item';
@@ -218,23 +253,142 @@ final class Boltfolio_Docs {
 				$classes .= ' current_page_ancestor';
 			}
 
-			printf(
-				'<li class="%1$s"><a href="%2$s">%3$s</a>',
-				esc_attr( $classes ),
-				esc_url( get_permalink( $child ) ),
-				esc_html( get_the_title( $child ) )
-			);
+			$title = self::display_title( $child->post_title );
+			$file  = self::looks_like_path( $child->post_title );
 
-			ob_start();
-			self::render_nav_tree( $child_id, $current_id, $ancestor_ids, $depth + 1 );
-			$nested = (string) ob_get_clean();
-
-			if ( '' !== $nested ) {
-				echo '<ul class="children">' . $nested . '</ul>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- composed of escaped fragments.
+			if ( ! $grandchildren ) {
+				printf(
+					'<li class="%1$s"><a href="%2$s"%3$s>%4$s</a></li>',
+					esc_attr( $classes ),
+					esc_url( get_permalink( $child ) ),
+					$file ? ' data-file="1"' : '',
+					esc_html( $title )
+				);
+				continue;
 			}
 
-			echo '</li>';
+			printf(
+				'<li><details class="docnav-sub"%1$s><summary>%2$s<span class="docnav-group__count">%3$d</span></summary><ul>',
+				$in_path ? ' open' : '',
+				esc_html( $title ),
+				(int) self::count_descendants( $child_id )
+			);
+
+			printf(
+				'<li class="%1$s"><a href="%2$s">%3$s</a></li>',
+				esc_attr( $child_id === $current_id ? 'page_item current_page_item' : 'page_item' ),
+				esc_url( get_permalink( $child ) ),
+				esc_html__( 'Overview', 'boltfolio' )
+			);
+
+			self::render_children( $child_id, $current_id, $ancestor_ids, $depth + 1 );
+
+			echo '</ul></details></li>';
 		}
+	}
+
+	/**
+	 * A group is a "file group" when its children are source paths,
+	 * which read better in a monospace face.
+	 *
+	 * @param array<int, WP_Post> $children Child docs.
+	 * @return bool
+	 */
+	private static function is_file_group( array $children ): bool {
+		foreach ( $children as $child ) {
+			if ( self::looks_like_path( $child->post_title ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Whether a doc title is a source path rather than prose.
+	 *
+	 * @param string $title Doc title.
+	 * @return bool
+	 */
+	public static function looks_like_path( string $title ): bool {
+		return (bool) preg_match( '#^[a-z0-9_\-]+(/[a-z0-9_\-]+)*\.php$#i', trim( $title ) );
+	}
+
+	/**
+	 * Titles that are source paths read better as the bare filename: the
+	 * directory is already implied by the group they sit in.
+	 *
+	 * @param string $title Raw doc title.
+	 * @return string
+	 */
+	public static function display_title( string $title ): string {
+		$title = trim( $title );
+
+		if ( self::looks_like_path( $title ) ) {
+			$parts = explode( '/', $title );
+
+			return (string) end( $parts );
+		}
+
+		return $title;
+	}
+
+	/**
+	 * Total number of descendants under a doc, so a collapsed group can
+	 * still say how much it contains.
+	 *
+	 * @param int $parent_id Parent doc ID.
+	 * @return int
+	 */
+	public static function count_descendants( int $parent_id ): int {
+		$children = self::doc_children( $parent_id );
+		$count    = count( $children );
+
+		foreach ( $children as $child ) {
+			$count += self::count_descendants( (int) $child->ID );
+		}
+
+		return $count;
+	}
+
+	/**
+	 * Ancestor chain of a doc, root first.
+	 *
+	 * @param int $doc_id Doc ID.
+	 * @return array<int, WP_Post>
+	 */
+	public static function ancestors( int $doc_id ): array {
+		$posts = array();
+
+		foreach ( array_reverse( get_post_ancestors( $doc_id ) ) as $ancestor_id ) {
+			$ancestor = get_post( $ancestor_id );
+
+			if ( $ancestor instanceof WP_Post ) {
+				$posts[] = $ancestor;
+			}
+		}
+
+		return $posts;
+	}
+
+	/**
+	 * The product root a doc belongs to (the top of its own tree).
+	 *
+	 * @param int $doc_id Doc ID.
+	 * @return WP_Post|null
+	 */
+	public static function root_of( int $doc_id ): ?WP_Post {
+		$ancestors = get_post_ancestors( $doc_id );
+
+		if ( ! $ancestors ) {
+			$post = get_post( $doc_id );
+
+			return $post instanceof WP_Post ? $post : null;
+		}
+
+		$root = get_post( (int) end( $ancestors ) );
+
+		return $root instanceof WP_Post ? $root : null;
 	}
 
 	/**

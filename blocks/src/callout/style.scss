@@ -1,6 +1,8 @@
 /**
  * Callout block styles — applied on both the front end and the editor.
- * Self-contained palette so the block looks right in any context.
+ *
+ * Colours fall back to literal values so the block still reads correctly
+ * in the editor, where the theme's custom properties may not be present.
  */
 
 .wp-block-boltfolio-callout,
@@ -8,20 +10,24 @@
 	display: flex;
 	gap: 0.9rem;
 	padding: 1rem 1.2rem;
-	margin: 1.5rem 0;
-	border-radius: 10px;
-	border: 1px solid;
-	font-size: 0.95rem;
+	margin: 1.6rem 0;
+	border: 1px solid var(--line-2, rgba(237, 233, 224, 0.14));
+	border-left-width: 2px;
+	background: var(--surface-2, #1b1b18);
+	font-size: 0.9375rem;
+	line-height: 1.65;
 
 	.callout-icon {
 		flex-shrink: 0;
 		margin-top: 0.15rem;
 		display: inline-flex;
+		color: var(--ivory-3, #7d7972);
 	}
 
 	.callout-title {
-		font-weight: 700;
-		margin: 0 0 0.25rem;
+		color: var(--ivory, #efebe2);
+		font-weight: 600;
+		margin: 0 0 0.3rem;
 	}
 
 	.callout-body > :first-child {
@@ -31,38 +37,28 @@
 	.callout-body > :last-child {
 		margin-bottom: 0;
 	}
-}
-
-.wp-block-boltfolio-callout,
-.callout {
 
 	&.callout-info {
-		background: rgba(96, 165, 250, 0.09);
-		border-color: rgba(96, 165, 250, 0.35);
+		border-left-color: var(--brass, #d9a93e);
 
-		.callout-title,
 		.callout-icon {
-			color: #3b82f6;
+			color: var(--brass, #d9a93e);
 		}
 	}
 
 	&.callout-tip {
-		background: rgba(234, 179, 8, 0.09);
-		border-color: rgba(234, 179, 8, 0.35);
+		border-left-color: var(--ok, #7fb08a);
 
-		.callout-title,
 		.callout-icon {
-			color: #eab308;
+			color: var(--ok, #7fb08a);
 		}
 	}
 
 	&.callout-warning {
-		background: rgba(248, 113, 113, 0.08);
-		border-color: rgba(248, 113, 113, 0.38);
+		border-left-color: var(--wf-paint, #d97b4a);
 
-		.callout-title,
 		.callout-icon {
-			color: #f87171;
+			color: var(--wf-paint, #d97b4a);
 		}
 	}
 }

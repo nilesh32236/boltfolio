@@ -1,13 +1,21 @@
 <?php
 /**
- * 301 redirects from legacy docs page URLs to the docs CPT URLs.
+ * 301 redirects for documentation URLs that have moved.
  *
- * Runs at template_redirect (before output) and only acts on 404 responses,
- * so legacy /docs/... page URLs keep working while the old pages are being
- * retired. `/docs/` itself is never redirected — the CPT archive serves it.
+ * Two generations of URL exist in the wild:
  *
- * Extend or override the map with the `boltfolio_docs_redirect_map` filter
- * (old path => new path, both relative, no leading/trailing slashes).
+ *  1. Legacy pages:       /docs/installation/           (pre-CPT)
+ *  2. Pre-cleanup CPT:    /docs/<product>/reference/reference-includes/class-main/
+ *
+ * The second group is recorded in the `boltfolio_docs_url_map` option by
+ * the slug migration, because a rename of a branch changes the path of
+ * every page beneath it and that mapping cannot be derived at runtime.
+ *
+ * Both are resolved only when WordPress has already decided the request
+ * is a 404, so a live page is never second-guessed.
+ *
+ * Extend or override with the `boltfolio_docs_redirect_map` filter
+ * (old path => new path, both relative, no leading or trailing slashes).
  *
  * @package boltfolio
  */
@@ -18,6 +26,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class Boltfolio_Docs_Redirects {
 
+	public const OPTION = 'boltfolio_docs_url_map';
+
 	/**
 	 * Wire hooks.
 	 */
@@ -26,7 +36,7 @@ final class Boltfolio_Docs_Redirects {
 	}
 
 	/**
-	 * Redirect a legacy docs URL to its new CPT URL (301).
+	 * Redirect a moved docs URL to its current location.
 	 */
 	public static function maybe_redirect(): void {
 		if ( is_admin() || wp_doing_ajax() || wp_doing_cron() ) {
@@ -60,14 +70,14 @@ final class Boltfolio_Docs_Redirects {
 	 * @return string
 	 */
 	private static function request_path(): string {
-		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- path is parsed, not stored.
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- parsed, not stored.
 		$path = (string) parse_url( $uri, PHP_URL_PATH );
 
 		return trim( (string) rawurldecode( $path ), '/' );
 	}
 
 	/**
-	 * Resolve a legacy path to its new path, or null when unmapped.
+	 * Resolve a moved path to its current path, or null when unmapped.
 	 *
 	 * @param string $path Normalized request path.
 	 * @return string|null
@@ -79,8 +89,8 @@ final class Boltfolio_Docs_Redirects {
 			return $map[ $path ];
 		}
 
-		// Per-file API reference pages: /docs/reference/<section>/<file>/ keeps
-		// its tail under the new product prefix. Bounded to the four known
+		// Per-file API reference pages: /docs/reference/<section>/<file>/
+		// keeps its tail under the product prefix. Bounded to the known
 		// reference sections and exactly one trailing segment.
 		$parts = explode( '/', $path );
 
@@ -98,16 +108,16 @@ final class Boltfolio_Docs_Redirects {
 	}
 
 	/**
-	 * Reference section slugs.
+	 * Reference branch slugs, in both their legacy and current spelling.
 	 *
 	 * @return array<string>
 	 */
 	private static function reference_sections(): array {
-		return array( 'reference-includes', 'reference-minify', 'reference-templates', 'reference-root' );
+		return array( 'includes', 'minify', 'templates', 'entry-points', 'reference-includes', 'reference-minify', 'reference-templates', 'reference-root' );
 	}
 
 	/**
-	 * Static legacy-to-new path map.
+	 * Every known moved path.
 	 *
 	 * @return array<string, string>
 	 */
@@ -115,13 +125,13 @@ final class Boltfolio_Docs_Redirects {
 		$product = 'docs/performance-optimisation';
 
 		$map = array(
-			'docs/installation'   => $product . '/installation',
-			'docs/features'       => $product . '/features',
-			'docs/litespeed'      => $product . '/litespeed',
-			'docs/configuration'  => $product . '/configuration',
+			'docs/installation'    => $product . '/installation',
+			'docs/features'        => $product . '/features',
+			'docs/litespeed'       => $product . '/litespeed',
+			'docs/configuration'   => $product . '/configuration',
 			'docs/troubleshooting' => $product . '/troubleshooting',
-			'docs/faq'            => $product . '/faq',
-			'docs/reference'      => $product . '/reference',
+			'docs/faq'             => $product . '/faq',
+			'docs/reference'       => $product . '/reference',
 		);
 
 		foreach ( self::feature_slugs() as $slug ) {
@@ -132,8 +142,21 @@ final class Boltfolio_Docs_Redirects {
 			$map[ 'docs/configuration/' . $slug ] = $product . '/configuration/' . $slug;
 		}
 
-		foreach ( self::reference_sections() as $section ) {
-			$map[ 'docs/reference/' . $section ] = $product . '/reference/' . $section;
+		foreach ( self::reference_sections() as $slug ) {
+			$map[ 'docs/reference/' . $slug ] = $product . '/reference/' . $slug;
+		}
+
+		// Paths recorded by the slug migration: branch renames cascade to
+		// every descendant, so the list has to be stored rather than
+		// recomputed.
+		$recorded = get_option( self::OPTION );
+
+		if ( is_array( $recorded ) ) {
+			foreach ( $recorded as $old => $new ) {
+				if ( is_string( $old ) && is_string( $new ) && '' !== $old && '' !== $new ) {
+					$map[ $old ] = $new;
+				}
+			}
 		}
 
 		return $map;

@@ -11,20 +11,33 @@ while ( have_posts() ) :
 	the_post();
 	?>
 	<article id="page-<?php the_ID(); ?>" <?php post_class(); ?>>
-		<div class="bolt-container">
-			<header class="entry-header">
-				<?php if ( ! is_front_page() ) : ?>
-					<?php boltfolio_breadcrumbs(); ?>
-				<?php endif; ?>
-				<h1 class="entry-title"><?php the_title(); ?></h1>
-				<?php if ( '' !== trim( (string) get_post()->post_excerpt ) && ! is_front_page() ) : ?>
-					<p class="entry-sub"><?php echo esc_html( get_the_excerpt() ); ?></p>
+		<div class="shell">
+			<header class="page-head">
+				<?php
+				if ( ! is_front_page() ) {
+					boltfolio_crumbs(
+						array(
+							array(
+								'label' => __( 'Home', 'boltfolio' ),
+								'url'   => home_url( '/' ),
+							),
+							array( 'label' => get_the_title() ),
+						)
+					);
+				}
+				?>
+
+				<h1 class="page-head__title"><?php the_title(); ?></h1>
+
+				<?php if ( get_the_excerpt() && ! is_front_page() ) : ?>
+					<p class="page-head__sub"><?php echo esc_html( get_the_excerpt() ); ?></p>
 				<?php endif; ?>
 			</header>
 
-			<div class="entry-content">
+			<div class="entry-content prose section">
 				<?php
 				the_content();
+
 				wp_link_pages(
 					array(
 						'before' => '<div class="page-links">' . esc_html__( 'Pages:', 'boltfolio' ),
@@ -35,7 +48,7 @@ while ( have_posts() ) :
 			</div>
 
 			<?php
-			// Theme ships no comments.php — never fall back to deprecated theme-compat.
+			// The theme ships no comments.php — never fall back to theme-compat.
 			if ( locate_template( 'comments.php' ) && ( comments_open() || get_comments_number() ) ) {
 				comments_template();
 			}
