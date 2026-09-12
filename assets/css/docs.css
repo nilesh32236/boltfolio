@@ -140,3 +140,112 @@
 	width: 100%;
 	overflow-x: auto;
 }
+
+
+/* ---------------------------------------------
+   API reference (Codex-style code pages)
+--------------------------------------------- */
+/* Signature block: monospace, accent edge, horizontal scroll, copy-friendly */
+.wppo-api-sign {
+	background: var(--bolt-surface);
+	border: 1px solid var(--bolt-border);
+	border-left: 3px solid var(--bolt-accent);
+	border-radius: var(--bolt-radius);
+	margin: 1.4rem 0;
+	padding: 0.9rem 1.1rem;
+	overflow-x: auto;
+	font-family: var(--bolt-mono);
+	font-size: 0.9rem;
+	line-height: 1.6;
+}
+
+.wppo-api-sign code {
+	background: transparent;
+	border: 0;
+	padding: 0;
+	color: var(--bolt-text);
+	font-size: inherit;
+	white-space: pre;
+}
+
+/* "Source: includes/class-x.php line N" annotations */
+.wppo-api-meta {
+	font-family: var(--bolt-mono);
+	font-size: 0.78rem;
+	color: var(--bolt-muted);
+	margin: -0.7rem 0 1.4rem;
+}
+
+/* Parameter tables: tight, left-aligned th, zebra rows, mono first column */
+.wppo-api-params {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9rem;
+	margin: 1rem 0 1.6rem;
+}
+
+.wppo-api-params th,
+.wppo-api-params td {
+	text-align: left;
+	border: 1px solid var(--bolt-border);
+	padding: 0.45rem 0.7rem;
+	vertical-align: top;
+}
+
+.wppo-api-params th {
+	background: var(--bolt-surface);
+	font-weight: 600;
+}
+
+.wppo-api-params tbody tr:nth-child(even) {
+	background: rgba(255, 255, 255, 0.03);
+}
+
+.wppo-api-params td:first-child {
+	font-family: var(--bolt-mono);
+	font-size: 0.85rem;
+	white-space: nowrap;
+}
+
+/* Same overflow guard as .docs-content .wp-block-table */
+.docs-content .wppo-api-params {
+	display: block;
+	width: 100%;
+	overflow-x: auto;
+}
+
+/* Anchor jumps land below the sticky header (same 90px offset as style.css headings) */
+.wppo-api-method {
+	scroll-margin-top: 90px;
+}
+
+/* Visibility badges: public / static / hook */
+.wppo-api-tag {
+	display: inline-block;
+	font-family: var(--bolt-mono);
+	font-size: 0.7em;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--bolt-muted);
+	border: 1px solid var(--bolt-border);
+	border-radius: 999px;
+	padding: 0.12rem 0.55rem;
+	vertical-align: middle;
+	margin-left: 0.4rem;
+}
+
+/* Parity: core/table places the block className on the wrapping <figure>,
+   not on the <table> itself. The .wppo-api-params rules above target the
+   table element; mirror the table-level rules onto the inner table so API
+   reference tables keep their look as core/table blocks. */
+figure.wppo-api-params {
+	width: 100%;
+	font-size: 0.9rem;
+	margin: 1rem 0 1.6rem;
+}
+
+figure.wppo-api-params table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 0;
+}

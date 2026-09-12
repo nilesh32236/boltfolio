@@ -133,9 +133,25 @@
 			return;
 		}
 
-		var headings = document.querySelectorAll(
-			'.docs-content .entry-content h2[id]'
-		);
+		var contentRoot = document.querySelector('.docs-content .entry-content');
+
+		if (!contentRoot) {
+			container.hidden = true;
+			return;
+		}
+
+		// h2 sections plus h3 anchors nested one level under them, in document order.
+		var headings = [];
+		var seenH2 = false;
+
+		contentRoot.querySelectorAll('h2[id], h3[id]').forEach(function (node) {
+			if (node.tagName === 'H2') {
+				seenH2 = true;
+				headings.push(node);
+			} else if (seenH2) {
+				headings.push(node);
+			}
+		});
 
 		if (!headings.length) {
 			container.hidden = true;

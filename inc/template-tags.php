@@ -42,7 +42,7 @@ function boltfolio_social_links(): array {
 function boltfolio_social_icons(): void {
 	foreach ( boltfolio_social_links() as $link ) {
 		printf(
-			'<a class="icon-link" href="%1$s" aria-label="%2$s" title="%2$s"%3$s>%4$s</a>',
+			'<a class="icon-link" href="%1$s" aria-label="%2$s"%3$s>%4$s</a>',
 			esc_url( $link['url'] ),
 			esc_attr( $link['label'] ),
 			str_starts_with( $link['url'], 'mailto:' ) ? '' : ' target="_blank" rel="noopener noreferrer"',
@@ -176,6 +176,8 @@ function boltfolio_breadcrumbs(): void {
 	foreach ( $items as $index => $item ) {
 		if ( $item['url'] && $index !== $last ) {
 			printf( '<a href="%1$s">%2$s</a>', esc_url( $item['url'] ), esc_html( $item['label'] ) );
+		} elseif ( $index === $last ) {
+			echo '<span aria-current="page">' . esc_html( $item['label'] ) . '</span>';
 		} else {
 			echo esc_html( $item['label'] );
 		}

@@ -19,7 +19,7 @@ get_header();
 		);
 		?>
 	</h1>
-	<div style="margin-top:1.4rem;"><?php get_search_form(); ?></div>
+	<div class="search-header-form"><?php get_search_form(); ?></div>
 </header>
 
 <?php if ( have_posts() ) : ?>
@@ -30,7 +30,7 @@ get_header();
 			?>
 			<article class="project-card">
 				<span class="badge badge-muted"><?php echo esc_html( get_post_type_object( get_post_type() )->labels->singular_name ); ?></span>
-				<h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+				<h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
 				<p><?php echo esc_html( wp_trim_words( get_the_excerpt(), 24 ) ); ?></p>
 			</article>
 			<?php

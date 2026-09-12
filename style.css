@@ -1,6 +1,5 @@
 /*
 Theme Name: Boltfolio
-Theme URI: https://github.com/nilesh32236/performance-optimisation
 Author: Nilesh Kanzariya
 Author URI: https://github.com/nilesh32236
 Description: A fast, dark-first developer portfolio theme built for showcasing WordPress plugins and open-source projects. Zero dependencies, performance focused.
@@ -506,6 +505,7 @@ a:focus-visible {
 	color: var(--bolt-accent);
 }
 
+.project-card h2,
 .project-card h3 {
 	margin: 0;
 	font-size: 1.18rem;
@@ -513,10 +513,13 @@ a:focus-visible {
 	line-height: 1.3;
 }
 
+.project-card h2 a,
 .project-card h3 a {
 	color: var(--bolt-text);
 }
 
+.project-card h2 a:hover,
+.project-card h2 a:focus-visible,
 .project-card h3 a:hover,
 .project-card h3 a:focus-visible {
 	color: var(--bolt-accent-strong);
@@ -1071,4 +1074,71 @@ a:focus-visible {
 
 .copyright .heart {
 	color: var(--bolt-accent);
+}
+
+
+/* ---------------------------------------------
+   Inline-style replacements (visuals unchanged)
+--------------------------------------------- */
+.hero-actions-centered {
+	justify-content: center;
+}
+
+.search-header-form {
+	margin-top: 1.4rem;
+}
+
+.error-desc {
+	margin-inline: auto;
+}
+
+.error-search {
+	display: flex;
+	justify-content: center;
+	margin-top: 1.6rem;
+}
+
+.error-back {
+	margin-top: 2rem;
+}
+
+.related-projects {
+	margin-top: 3rem;
+	border-radius: 14px;
+}
+
+.related-projects-title {
+	margin-bottom: 1.4rem;
+	font-size: 1.3rem;
+}
+
+/* ---------------------------------------------
+   Print
+--------------------------------------------- */
+@media print {
+	body {
+		background: #fff;
+		color: #000;
+	}
+
+	.site-header,
+	.main-navigation,
+	.nav-toggle,
+	.site-footer,
+	.docs-sidebar,
+	.docs-toc,
+	.docs-pager {
+		display: none !important;
+	}
+
+	.bolt-container,
+	.bolt-container-wide {
+		width: auto;
+		max-width: none;
+		margin: 0;
+	}
+
+	a {
+		color: #000;
+	}
 }

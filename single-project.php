@@ -81,8 +81,8 @@ while ( have_posts() ) :
 
 			if ( $related->have_posts() ) :
 				?>
-				<section class="section section-alt" style="margin-top:3rem;border-radius:14px;">
-					<h2 class="section-title" style="margin-bottom:1.4rem;font-size:1.3rem;"><?php esc_html_e( 'More projects', 'boltfolio' ); ?></h2>
+				<section class="section section-alt related-projects">
+					<h2 class="section-title related-projects-title"><?php esc_html_e( 'More projects', 'boltfolio' ); ?></h2>
 					<div class="project-grid">
 						<?php
 						while ( $related->have_posts() ) :

@@ -11,7 +11,7 @@
 <footer class="site-footer">
 	<div class="bolt-container bolt-container-wide">
 		<div class="footer-inner">
-			<div class="footer-nav">
+			<nav class="footer-nav" aria-label="<?php echo esc_attr( __( 'Footer menu', 'boltfolio' ) ); ?>">
 				<?php
 				wp_nav_menu(
 					array(
@@ -23,7 +23,7 @@
 					)
 				);
 				?>
-			</div>
+			</nav>
 			<div class="footer-socials">
 				<?php boltfolio_social_icons(); ?>
 			</div>

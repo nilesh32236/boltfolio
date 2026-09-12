@@ -47,7 +47,7 @@ if ( is_post_type_archive( 'project' ) ) {
 			} else {
 				?>
 				<article class="project-card">
-					<h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+					<h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
 					<p><?php echo esc_html( wp_trim_words( get_the_excerpt(), 26 ) ); ?></p>
 					<div class="card-meta">
 						<time datetime="<?php echo esc_attr( get_the_date( DATE_W3C ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>

@@ -1,0 +1,12 @@
+{
+	"name": "boltfolio-docs-tools",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"description": "Standalone tooling for the Boltfolio docs pipeline (HTML to Gutenberg blocks). Not loaded by WordPress.",
+	"dependencies": {
+		"@wordpress/block-library": "^10.5.0",
+		"@wordpress/blocks": "^15.27.0",
+		"jsdom": "^30.0.1"
+	}
+}

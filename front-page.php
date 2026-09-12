@@ -137,7 +137,7 @@ $featured = new WP_Query(
 		<div class="cta-band">
 			<h2><?php esc_html_e( 'Need a faster WordPress site?', 'boltfolio' ); ?></h2>
 			<p><?php esc_html_e( 'Performance audits, custom caching solutions and code-level optimization work. Open source is where I share everything I learn along the way.', 'boltfolio' ); ?></p>
-			<div class="hero-actions" style="justify-content:center;">
+			<div class="hero-actions hero-actions-centered">
 				<a class="btn btn-primary" href="mailto:nilesh.kanzariya912@gmail.com"><?php esc_html_e( 'Email me', 'boltfolio' ); ?></a>
 				<a class="btn btn-ghost" href="https://github.com/nilesh32236" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'GitHub', 'boltfolio' ); ?></a>
 			</div>

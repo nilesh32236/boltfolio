@@ -14,6 +14,8 @@ define( 'BOLTFOLIO_VERSION', '1.0.0' );
 require get_template_directory() . '/inc/class-boltfolio-projects.php';
 require get_template_directory() . '/inc/template-tags.php';
 require get_template_directory() . '/inc/class-boltfolio-content.php';
+require get_template_directory() . '/inc/class-boltfolio-docs.php';
+require get_template_directory() . '/inc/class-boltfolio-docs-redirects.php';
 
 /**
  * Auto-register every compiled block in the master block suite.
@@ -116,7 +118,7 @@ function boltfolio_assets(): void {
 		);
 	}
 
-	if ( is_page_template( 'page-docs.php' ) ) {
+	if ( is_page_template( 'page-docs.php' ) || is_singular( Boltfolio_Docs::POST_TYPE ) || is_post_type_archive( Boltfolio_Docs::POST_TYPE ) || is_tax( Boltfolio_Docs::TAXONOMY ) ) {
 		$docs_css = get_template_directory() . '/assets/css/docs.css';
 
 		if ( file_exists( $docs_css ) ) {
@@ -130,6 +132,16 @@ function boltfolio_assets(): void {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'boltfolio_assets' );
+
+// Keep nav-critical theme JS out of delay loading: the first tap would be consumed by the delayed script instead of opening the mobile menu.
+add_filter(
+	'wppo_exclude_delay_js',
+	static function ( array $exclusions ): array {
+		$exclusions[] = 'boltfolio-script';
+
+		return $exclusions;
+	}
+);
 
 /**
  * Trim archive excerpts.

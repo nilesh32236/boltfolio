@@ -35,7 +35,8 @@ while ( have_posts() ) :
 			</div>
 
 			<?php
-			if ( comments_open() || get_comments_number() ) {
+			// Theme ships no comments.php — never fall back to deprecated theme-compat.
+			if ( locate_template( 'comments.php' ) && ( comments_open() || get_comments_number() ) ) {
 				comments_template();
 			}
 			?>
