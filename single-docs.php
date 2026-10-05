@@ -60,8 +60,8 @@ while ( have_posts() ) :
 							</p>
 						<?php endif; ?>
 
-						<?php if ( boltfolio_documented_version() ) : ?>
-							<span class="docs-product__ver">v<?php echo esc_html( boltfolio_documented_version() ); ?></span>
+						<?php if ( boltfolio_documented_version( $boltfolio_doc_id ) ) : ?>
+							<span class="docs-product__ver">v<?php echo esc_html( boltfolio_documented_version( $boltfolio_doc_id ) ); ?></span>
 						<?php endif; ?>
 					</div>
 

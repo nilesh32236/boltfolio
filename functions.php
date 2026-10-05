@@ -147,6 +147,32 @@ function boltfolio_assets(): void {
 add_action( 'wp_enqueue_scripts', 'boltfolio_assets' );
 
 /**
+ * Keep the documentation hub out of the plugin's page-file CSS pipeline.
+ *
+ * The post-type archive is intentionally rendered dynamically so the product
+ * counts stay current. The cache combiner still advertises a per-URL combined
+ * stylesheet for this route, but the archive buffer is not written to disk;
+ * opting it out keeps the original theme/core stylesheets in place and avoids
+ * an orphaned `/docs/index.css` request.
+ *
+ * @param bool   $should_cache Whether the request is cacheable.
+ * @param string $request_uri  Current request URI.
+ * @param bool   $is_mobile    Whether the visitor is on mobile.
+ * @param bool   $is_logged_in Whether the visitor is logged in.
+ * @return bool
+ */
+function boltfolio_docs_archive_cache_policy( bool $should_cache, string $request_uri, bool $is_mobile, bool $is_logged_in ): bool {
+	unset( $request_uri, $is_mobile, $is_logged_in );
+
+	if ( is_post_type_archive( 'docs' ) ) {
+		return false;
+	}
+
+	return $should_cache;
+}
+add_filter( 'wppo_should_cache_request', 'boltfolio_docs_archive_cache_policy', 10, 4 );
+
+/**
  * Declare the theme's script as non-delayable.
  *
  * Optimisation plugins that "delay JS until interaction" rewrite script
@@ -300,22 +326,57 @@ function boltfolio_stats(): array {
 		'classes'  => 0,
 	);
 
-	// "Classes" counts the source-reference groups in the docs tree, which
-	// is the honest denominator for how much of the codebase is documented.
-	$reference = get_page_by_path( 'reference', OBJECT, Boltfolio_Docs::POST_TYPE );
+	// Count direct source-reference children for every product. Looking up
+	// `reference` globally misses hierarchical CPT children and reports zero.
+	$roots = get_posts(
+		array(
+			'post_type'      => Boltfolio_Docs::POST_TYPE,
+			'post_status'    => 'publish',
+			'post_parent'    => 0,
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'no_found_rows'  => true,
+		)
+	);
 
-	if ( $reference instanceof WP_Post ) {
-		$stats['classes'] = count(
-			get_posts(
+	foreach ( $roots as $root_id ) {
+		$reference_ids = get_posts(
+			array(
+				'post_type'      => Boltfolio_Docs::POST_TYPE,
+				'post_status'    => 'publish',
+				'post_parent'    => (int) $root_id,
+				'name'           => 'reference',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+			)
+		);
+		foreach ( $reference_ids as $reference_id ) {
+			$section_ids = get_posts(
 				array(
 					'post_type'      => Boltfolio_Docs::POST_TYPE,
 					'post_status'    => 'publish',
+					'post_parent'    => (int) $reference_id,
 					'posts_per_page' => -1,
 					'fields'         => 'ids',
-					'post_parent'    => $reference->ID,
+					'no_found_rows'  => true,
 				)
-			)
-		);
+			);
+			foreach ( $section_ids as $section_id ) {
+				$stats['classes'] += count(
+					get_posts(
+						array(
+							'post_type'      => Boltfolio_Docs::POST_TYPE,
+							'post_status'    => 'publish',
+							'post_parent'    => (int) $section_id,
+							'posts_per_page' => -1,
+							'fields'         => 'ids',
+							'no_found_rows'  => true,
+						)
+					)
+				);
+			}
+		}
 	}
 
 	set_transient( 'boltfolio_stats', $stats, HOUR_IN_SECONDS );

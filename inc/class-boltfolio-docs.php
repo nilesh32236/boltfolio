@@ -18,6 +18,10 @@ final class Boltfolio_Docs {
 	public const POST_TYPE         = 'docs';
 	public const TAXONOMY          = 'doc_project';
 	public const DEFAULT_TERM_SLUG = 'performance-optimisation';
+	public const DEFAULT_TERMS     = array(
+		'performance-optimisation' => 'Performance Optimisation',
+		'duoport-opencode'          => 'DuoPort Connector for OpenCode',
+	);
 
 	/**
 	 * Wire hooks.
@@ -25,7 +29,7 @@ final class Boltfolio_Docs {
 	public static function init(): void {
 		add_action( 'init', array( __CLASS__, 'register_post_type' ) );
 		add_action( 'init', array( __CLASS__, 'register_taxonomy' ) );
-		add_action( 'init', array( __CLASS__, 'ensure_default_term' ), 20 );
+		add_action( 'init', array( __CLASS__, 'ensure_default_terms' ), 20 );
 		add_filter( 'manage_docs_posts_columns', array( __CLASS__, 'admin_columns' ) );
 		add_action( 'manage_docs_posts_custom_column', array( __CLASS__, 'admin_column_content' ), 10, 2 );
 	}
@@ -110,22 +114,37 @@ final class Boltfolio_Docs {
 	}
 
 	/**
-	 * Ensure the default product term exists (created once).
+	 * Ensure the documented product terms exist.
+	 *
+	 * The docs archive is intentionally multi-product. Terms are created
+	 * idempotently so a fresh site can publish both plugin document trees.
+	 *
+	 * @return void
 	 */
-	public static function ensure_default_term(): void {
+	public static function ensure_default_terms(): void {
 		if ( ! taxonomy_exists( self::TAXONOMY ) ) {
 			return;
 		}
 
-		if ( term_exists( self::DEFAULT_TERM_SLUG, self::TAXONOMY ) ) {
-			return;
-		}
+		foreach ( self::DEFAULT_TERMS as $slug => $name ) {
+			if ( term_exists( $slug, self::TAXONOMY ) ) {
+				continue;
+			}
 
-		wp_insert_term(
-			__( 'Performance Optimisation', 'boltfolio' ),
-			self::TAXONOMY,
-			array( 'slug' => self::DEFAULT_TERM_SLUG )
-		);
+			$result = wp_insert_term( $name, self::TAXONOMY, array( 'slug' => $slug ) );
+			if ( is_wp_error( $result ) ) {
+				continue;
+			}
+		}
+	}
+
+	/**
+	 * Backward-compatible wrapper for the original single-term helper.
+	 *
+	 * @return void
+	 */
+	public static function ensure_default_term(): void {
+		self::ensure_default_terms();
 	}
 
 	/**

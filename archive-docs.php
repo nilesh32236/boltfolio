@@ -100,8 +100,8 @@ if ( is_wp_error( $boltfolio_terms ) ) {
 								(int) $boltfolio_term->count
 							);
 
-							if ( boltfolio_documented_version() ) {
-								echo ' <span class="meta">v' . esc_html( boltfolio_documented_version() ) . '</span>';
+							if ( boltfolio_documented_version( (int) $boltfolio_root->ID ) ) {
+								echo ' <span class="meta">v' . esc_html( boltfolio_documented_version( (int) $boltfolio_root->ID ) ) . '</span>';
 							}
 							?>
 						</p>

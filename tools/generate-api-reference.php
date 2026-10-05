@@ -41,9 +41,14 @@ function wppo_docs_rel( string $plugin_dir, string $abs ): string {
 }
 
 /**
- * Explicit scan set: root entry points, includes/*.php, includes/minify/*.php,
- * templates/*.php. vendor/, docs/, tests/, node_modules/, build/ and
+ * Explicit scan set: root entry points, every PHP file below includes/,
+ * and shipped templates. vendor/, docs/, tests/, node_modules/, build/ and
  * non-PHP files are never touched.
+ *
+ * The plugin's runtime tree is intentionally recursive. The previous
+ * one-level glob silently omitted the current Core/, Cache/, CSS/, and
+ * other responsibility directories, which made the published reference
+ * look complete while documenting only a fraction of the source.
  *
  * @return array<string,string> rel path => section
  */
@@ -55,25 +60,31 @@ function wppo_docs_target_files( string $plugin_dir ): array {
 			$files[ $f ] = 'root';
 		}
 	}
-	// Redis connection helper lives in includes/ but is documented with the root entry points.
-	if ( is_file( $plugin_dir . '/includes/redis-connect-helper.php' ) ) {
-		$files[ 'includes/redis-connect-helper.php' ] = 'root';
-	}
 
-	$inc = glob( $plugin_dir . '/includes/*.php' ) ?: array();
-	sort( $inc, SORT_NATURAL );
-	foreach ( $inc as $p ) {
-		if ( 'redis-connect-helper.php' === basename( $p ) ) {
-			continue; // documented with the root entry points per spec
+	$includes_dir = $plugin_dir . '/includes';
+	if ( is_dir( $includes_dir ) ) {
+		$iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $includes_dir, FilesystemIterator::SKIP_DOTS )
+		);
+		foreach ( $iterator as $path => $file_info ) {
+			if ( ! $file_info->isFile() || 'php' !== strtolower( $file_info->getExtension() ) ) {
+				continue;
+			}
+			$rel = wppo_docs_rel( $plugin_dir, (string) $path );
+			$files[ $rel ] = str_starts_with( $rel, 'includes/minify/' ) ? 'minify' : 'includes';
 		}
-		$files[ wppo_docs_rel( $plugin_dir, $p ) ] = 'includes';
 	}
 
-	foreach ( array( 'includes/minify/*.php' => 'minify', 'templates/*.php' => 'templates' ) as $pat => $sec ) {
-		$set = glob( $plugin_dir . '/' . $pat ) ?: array();
-		sort( $set, SORT_NATURAL );
-		foreach ( $set as $p ) {
-			$files[ wppo_docs_rel( $plugin_dir, $p ) ] = $sec;
+	$template_dir = $plugin_dir . '/templates';
+	if ( is_dir( $template_dir ) ) {
+		$iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $template_dir, FilesystemIterator::SKIP_DOTS )
+		);
+		foreach ( $iterator as $path => $file_info ) {
+			if ( ! $file_info->isFile() || 'php' !== strtolower( $file_info->getExtension() ) ) {
+				continue;
+			}
+			$files[ wppo_docs_rel( $plugin_dir, (string) $path ) ] = 'templates';
 		}
 	}
 
@@ -1224,19 +1235,18 @@ function wppo_docs_code( string $s ): string {
 
 function wppo_docs_slug_for( string $rel, string $section ): string {
 	$base = preg_replace( '/\.php$/', '', $rel ) ?? $rel;
-	switch ( $section ) {
-		case 'root':
-			// Entry points are slugified from the bare file name (e.g. redis-connect-helper-php),
-			// even when the file physically lives in includes/.
-			return str_replace( '/', '-', basename( $base ) ) . '-php';
-		case 'includes':
-			return 'includes-' . str_replace( '/', '-', basename( $base ) );
-		case 'minify':
-			return 'minify-' . basename( $base );
-		case 'templates':
-			return 'templates-' . basename( $base );
+	$file = basename( $base );
+
+	// Keep the established public URLs stable. The current source tree has
+	// unique PHP basenames, so the filename is a readable and durable slug
+	// even when the file has moved into a responsibility directory.
+	if ( 'performance-optimisation.php' === $rel ) {
+		return 'performance-optimisation';
 	}
-	return str_replace( '/', '-', $base );
+	if ( 'uninstall.php' === $rel ) {
+		return 'uninstall';
+	}
+	return $file;
 }
 
 function wppo_docs_badges( array $parts ): string {
@@ -1543,10 +1553,10 @@ function wppo_docs_render_file( array $f, string $hooks_html ): string {
 // ---------------------------------------------------------------------------
 
 const WPPO_DOCS_SECTIONS = array(
-	'includes'  => array( 'file' => 'reference-includes.html', 'slug' => 'reference-includes', 'order' => 10, 'title' => 'Includes — core classes', 'intro' => 'Core classes loaded by the Performance Optimisation plugin. Each row links to the per-file reference page.' ),
-	'minify'    => array( 'file' => 'reference-minify.html', 'slug' => 'reference-minify', 'order' => 11, 'title' => 'Minify engine', 'intro' => 'CSS, JavaScript and HTML minification classes under includes/minify/.' ),
-	'templates' => array( 'file' => 'reference-templates.html', 'slug' => 'reference-templates', 'order' => 12, 'title' => 'Templates and drop-ins', 'intro' => 'Drop-in templates shipped with the plugin: the Redis object cache drop-in and the compiled translations template.' ),
-	'root'      => array( 'file' => 'reference-root.html', 'slug' => 'reference-root', 'order' => 13, 'title' => 'Entry points', 'intro' => 'Entry point files: the main plugin bootstrap, the uninstall routine and the Redis connection helper.' ),
+	'includes'  => array( 'file' => 'reference-includes.html', 'slug' => 'includes', 'order' => 10, 'title' => 'Runtime source', 'intro' => 'Every PHP file under includes/, including the current Core, Cache, Settings, CSS, Edge, Insight, Integration, Scheduler, Support, and Admin responsibility directories.' ),
+	'minify'    => array( 'file' => 'reference-minify.html', 'slug' => 'minify', 'order' => 11, 'title' => 'Minify engine', 'intro' => 'Protected CSS, JavaScript, and HTML minification wrappers under includes/minify/.' ),
+	'templates' => array( 'file' => 'reference-templates.html', 'slug' => 'templates', 'order' => 12, 'title' => 'Templates and drop-ins', 'intro' => 'Drop-in templates shipped with the plugin: the Redis object-cache drop-in and the compiled translations template.' ),
+	'root'      => array( 'file' => 'reference-root.html', 'slug' => 'entry-points', 'order' => 13, 'title' => 'Entry points', 'intro' => 'Top-level plugin bootstrap and uninstall routines.' ),
 );
 
 function wppo_docs_render_index( array $files, string $generator_rel ): string {
@@ -1718,7 +1728,7 @@ $manifest[] = array(
 	'slug'        => 'reference',
 	'title'       => 'Code reference',
 	'menu_order'  => 0,
-	'parent_slug' => null,
+	'parent_slug' => 'performance-optimisation',
 	'excerpt'     => 'Generated code reference for the Performance Optimisation plugin, built by static analysis of its source files.',
 );
 

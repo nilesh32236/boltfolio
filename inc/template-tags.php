@@ -198,30 +198,43 @@ function boltfolio_term_badges( ?int $post_id = null ): void {
 /**
  * The version string of the documented plugin, read from its header.
  *
- * Shown in the docs sidebar so readers always know which release the
- * reference describes.
+ * The docs archive now contains more than one plugin. Resolve the product
+ * from the supplied document when possible so a DuoPort page never displays
+ * the Performance Optimisation release number.
  *
+ * @param int|null $post_id Documentation post ID, when available.
  * @return string
  */
-function boltfolio_documented_version(): string {
-	$cached = get_transient( 'boltfolio_plugin_version' );
+function boltfolio_documented_version( ?int $post_id = null ): string {
+	$product_slug = 'performance-optimisation';
+
+	if ( $post_id && function_exists( 'get_the_terms' ) ) {
+		$terms = get_the_terms( $post_id, Boltfolio_Docs::TAXONOMY );
+		if ( is_array( $terms ) && $terms ) {
+			$product_slug = (string) $terms[0]->slug;
+		}
+	}
+
+	$plugin_file = 'duoport-opencode' === $product_slug
+		? WP_PLUGIN_DIR . '/duoport-connect-for-opencode/duoport-connect-for-opencode.php'
+		: WP_PLUGIN_DIR . '/performance-optimisation/performance-optimisation.php';
+	$cache_key   = 'boltfolio_plugin_version_' . md5( $plugin_file );
+	$cached      = get_transient( $cache_key );
 
 	if ( is_string( $cached ) && ! empty( $cached ) ) {
 		return $cached;
 	}
 
 	$version = '';
-	$header  = WP_PLUGIN_DIR . '/performance-optimisation/performance-optimisation.php';
-
-	if ( file_exists( $header ) ) {
-		$data = get_file_data( $header, array( 'Version' => 'Version' ) );
+	if ( file_exists( $plugin_file ) ) {
+		$data = get_file_data( $plugin_file, array( 'Version' => 'Version' ) );
 
 		if ( ! empty( $data['Version'] ) ) {
 			$version = (string) $data['Version'];
 		}
 	}
 
-	set_transient( 'boltfolio_plugin_version', $version, DAY_IN_SECONDS );
+	set_transient( $cache_key, $version, DAY_IN_SECONDS );
 
 	return $version;
 }

@@ -596,7 +596,8 @@
 	padding: 0;
 	color: var(--ivory);
 	font-size: inherit;
-	white-space: pre;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
 }
 
 /* Parameter tables — dense, mono first column, hairline rules. */
@@ -659,14 +660,32 @@ figure.wppo-api-params table {
 
 /* Overflow guards — the layout must never scroll sideways. */
 .docs-content .wp-block-table,
-.docs-content .wppo-api-params {
+.docs-content .wppo-api-params,
+.docs-content table.has-fixed-layout {
 	display: block;
 	width: 100%;
+	max-width: 100%;
 	overflow-x: auto;
+}
+
+.docs-content .entry-content code {
+	overflow-wrap: anywhere;
+	word-break: break-word;
+	white-space: pre-wrap;
+}
+
+.docs-content .entry-content p {
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+.docs-content .wppo-api-sign {
+	max-width: 100%;
 }
 
 .docs-content figure.wp-block-table {
 	display: block;
+	max-width: 100%;
 }
 
 /* Visibility badges: public / static / hook */
